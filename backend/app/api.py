@@ -163,8 +163,8 @@ class GuestIn(BaseModel):
 @router.post("/auth/guest")
 def guest(body: GuestIn, db: Session = Depends(get_db)):
     name = body.name.strip() or "New roommate"
-    u = User(name=name, age=25, gender="male", occupation="", area="Koramangala", lat=12.9352, lng=77.6245, bio="", intent="seeking",
-             budget_min=12000, budget_max=22000, move_in="Flexible", traits={}, prefs={}, taste=[], tags=[], anti_tags=[],
+    u = User(name=name, age=25, gender="male", occupation="", area="", lat=12.9716, lng=77.5946, bio="", intent="seeking",
+             budget_min=0, budget_max=0, move_in="Flexible", traits={}, prefs={}, taste=[], tags=[], anti_tags=[],
              custom_prefs=[], answers={}, languages=["English"], onboarded=False, is_demo=False, verified=False, last_active="Active now")
     db.add(u)
     db.commit()
@@ -173,31 +173,17 @@ def guest(body: GuestIn, db: Session = Depends(get_db)):
 
 
 class BasicsIn(BaseModel):
-    name: str = Field(max_length=60)
+    name: str = Field(min_length=1, max_length=60)
     age: int = Field(ge=18, le=70)
     gender: str
-    occupation: str = ""
-    area: str
-    budget_min: int = Field(ge=3000)
-    budget_max: int = Field(le=200000)
-    intent: str = "seeking"
-    gender_pref: str = "any"
-    move_in: str = "Flexible"
+    occupation: str = Field(min_length=1, max_length=140)
 
 
 @router.put("/me/basics")
 def set_basics(body: BasicsIn, me: dict = Depends(current_user), db: Session = Depends(get_db)):
-    if body.area not in AREAS:
-        raise HTTPException(400, "Unknown area")
-    if body.gender not in ("male", "female", "non-binary") or body.intent not in ("seeking", "has_room") or body.gender_pref not in ("any", "same", "male", "female"):
+    if body.gender not in ("male", "female", "non-binary"):
         raise HTTPException(400, "Invalid value")
-    rng = random.Random(me["id"])
-    me.update(
-        name=body.name.strip(), age=body.age, gender=body.gender, occupation=body.occupation.strip(), area=body.area,
-        lat=round(AREAS[body.area][0] + rng.uniform(-0.004, 0.004), 5), lng=round(AREAS[body.area][1] + rng.uniform(-0.004, 0.004), 5),
-        budget_min=min(body.budget_min, body.budget_max), budget_max=max(body.budget_min, body.budget_max),
-        intent=body.intent, gender_pref=body.gender_pref, move_in=body.move_in,
-    )
+    me.update(name=body.name.strip(), age=body.age, gender=body.gender, occupation=body.occupation.strip())
     first_time = not me["onboarded"]
     me["onboarded"] = True
     persist(me)
@@ -233,9 +219,9 @@ def get_me(me: dict = Depends(current_user), db: Session = Depends(get_db)):
 def patch_me(body: ProfileIn, me: dict = Depends(current_user), db: Session = Depends(get_db)):
     data = body.model_dump(exclude_none=True)
     if "area" in data:
-        if data["area"] not in AREAS:
+        if data["area"] and data["area"] not in AREAS:
             raise HTTPException(400, "Unknown area")
-        me["lat"], me["lng"] = AREAS[data["area"]][0], AREAS[data["area"]][1]
+        me["lat"], me["lng"] = (AREAS[data["area"]][0], AREAS[data["area"]][1]) if data["area"] else (12.9716, 77.5946)
     for k in ("name", "age", "occupation", "bio", "area", "budget_min", "budget_max", "intent", "gender_pref", "move_in", "religion", "languages"):
         if k in data:
             me[k] = data[k]
@@ -355,26 +341,36 @@ async def agent_reset(me: dict = Depends(current_user)):
 # ----------------------------------------------------------------------------- matches
 @router.get("/matches")
 def matches(
-    sort: str = "score", areas: str = "", intent: str = "", min_score: int = 0, q: str = "", verified: bool = False,
-    max_km: float = 0, limit: int = 30, offset: int = 0, me: dict = Depends(current_user),
+    sort: str = "score", areas: str = "", intent: str = "", gender: str = "", min_age: int = 0, max_age: int = 0,
+    min_budget: int = 0, max_budget: int = 0, min_score: int = 0, q: str = "", verified: bool = False,
+    limit: int = 30, offset: int = 0, me: dict = Depends(current_user),
 ):
     pool = pool_for(me)
     ranked = rank(me, pool)
     wanted = {a for a in areas.split(",") if a}
+    genders = {g for g in gender.split(",") if g}
     needle = q.strip().lower()
     out = []
     for c, cm in ranked:
         if cm["score"] < min_score or (wanted and c["area"] not in wanted) or (intent and c["intent"] != intent) or (verified and not c["verified"]):
             continue
-        if max_km and cm["distance_km"] > max_km:
+        if (genders and c["gender"] not in genders) or (min_age and c["age"] < min_age) or (max_age and c["age"] > max_age):
             continue
+        if min_budget or max_budget:
+            listing = LISTINGS.get(c["id"])
+            lo, hi = (listing["rent"], listing["rent"]) if listing else (c["budget_min"], c["budget_max"])
+            if (max_budget and lo > max_budget) or (min_budget and hi < min_budget):
+                continue
         if needle and needle not in (c["name"] + " " + c["occupation"] + " " + c["area"]).lower():
             continue
         out.append((c, cm))
-    if sort == "distance":
-        out.sort(key=lambda x: x[1]["distance_km"])
-    elif sort == "budget":
-        out.sort(key=lambda x: x[0]["budget_min"])
+    keys = {
+        "budget_asc": (lambda x: x[0]["budget_min"], False), "budget_desc": (lambda x: x[0]["budget_max"], True),
+        "age_asc": (lambda x: x[0]["age"], False), "age_desc": (lambda x: x[0]["age"], True),
+    }
+    if sort in keys:
+        key, rev = keys[sort]
+        out.sort(key=key, reverse=rev)
     return {
         "total": len(out),
         "pool": {"initial": len(pool_for(me, use_answers=False)), "remaining": len(pool)},

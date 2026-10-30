@@ -49,11 +49,12 @@ def basics_ok(me: dict, c: dict) -> bool:
         return False
     if not gender_ok(c["gender_pref"], c["gender"], me["gender"]):
         return False
-    if max(me["budget_min"], c["budget_min"]) > min(me["budget_max"], c["budget_max"]) * 1.1:
-        return False
-    listing = LISTINGS.get(c["id"])
-    if listing and me["intent"] == "seeking" and listing["rent"] > me["budget_max"] * 1.15:
-        return False
+    if me["budget_max"] > 0:  # budget is optional now: it lives in the results filters
+        if max(me["budget_min"], c["budget_min"]) > min(me["budget_max"], c["budget_max"]) * 1.1:
+            return False
+        listing = LISTINGS.get(c["id"])
+        if listing and me["intent"] == "seeking" and listing["rent"] > me["budget_max"] * 1.15:
+            return False
     mine = LISTINGS.get(me["id"])
     if mine and c["intent"] == "seeking" and mine["rent"] > c["budget_max"] * 1.15:
         return False
@@ -212,6 +213,8 @@ def taste_score(me: dict, c: dict) -> tuple[float, list[str], list[str]]:
 
 
 def budget_score(me: dict, c: dict) -> float:
+    if me["budget_max"] <= 0 or c["budget_max"] <= 0:
+        return 0.7
     lo, hi = max(me["budget_min"], c["budget_min"]), min(me["budget_max"], c["budget_max"])
     span = min(me["budget_max"] - me["budget_min"], c["budget_max"] - c["budget_min"]) or 1
     return max(0.0, min(1.0, (hi - lo) / span + 0.35)) if hi >= lo else 0.3
@@ -226,8 +229,9 @@ def compat(me: dict, c: dict) -> dict:
     pref = pref_score(me, c)
     taste, shared, shared_ents = taste_score(me, c)
     bud = budget_score(me, c)
-    dist = km(me, c)
-    loc = location_score(dist)
+    located = bool(me["area"])
+    dist = km(me, c) if located else None
+    loc = location_score(dist) if located else 0.6
     raw = 0.35 * life + 0.15 * pref + 0.30 * taste + 0.10 * bud + 0.10 * loc
     score = int(round(min(99, 35 + 65 * min(1.0, raw / 0.85) ** 1.2)))
     return {
@@ -238,7 +242,7 @@ def compat(me: dict, c: dict) -> dict:
         },
         "shared_tags": shared,
         "shared_entities": shared_ents,
-        "distance_km": round(dist, 1),
+        "distance_km": round(dist, 1) if dist is not None else None,
     }
 
 
@@ -265,7 +269,7 @@ def reasons_for(me: dict, c: dict, cm: dict, limit: int = 4) -> list[dict]:
         lo, hi = max(me["budget_min"], c["budget_min"]), min(me["budget_max"], c["budget_max"])
         if hi >= lo:
             out.append({"icon": "💸", "text": f"Budgets overlap at ₹{lo // 1000}–{hi // 1000}k"})
-    if cm["distance_km"] <= 4:
+    if cm["distance_km"] is not None and cm["distance_km"] <= 4:
         out.append({"icon": "📍", "text": f"Only {cm['distance_km']} km apart"})
     return out[:limit]
 
