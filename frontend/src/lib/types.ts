@@ -46,6 +46,7 @@ export interface Listing extends ListingLite {
 
 export interface MatchCardData {
   id: number;
+  avatar: string;
   name: string;
   age: number;
   gender: string;
@@ -79,10 +80,7 @@ export interface ProfileData extends Omit<MatchCardData, "listing"> {
   heads_up: string[];
   shared_entities: string[];
   listing: Listing | null;
-  liked: boolean;
-  liked_me: boolean;
-  mutual: boolean;
-  conversation_id: number | null;
+  conversation: { id: number; status: "accepted" | "request"; incoming: boolean } | null;
   is_demo: boolean;
 }
 
@@ -111,7 +109,8 @@ export interface Me {
   trait_chips: TraitChip[];
   answered: number;
   listing: Listing | null;
-  counts: { unread: number; liked_you: number };
+  counts: { unread: number; requests: number };
+  avatar: string;
 }
 
 export interface Option {
@@ -151,7 +150,7 @@ export interface AgentStep {
   max_questions: number;
   done: boolean;
   question: Question | null;
-  top: { id: number; name: string; score: number; area: string }[];
+  top: { id: number; name: string; score: number; area: string; avatar: string }[];
   trace: TraceEvent[];
 }
 
@@ -160,14 +159,17 @@ export interface Stats {
   rooms: number;
   areas: { name: string; lat: number; lng: number; count: number; rooms: number; seekers: number }[];
   top_tags: (TagChip & { count: number })[];
-  points: { id: number; lat: number; lng: number; name: string; intent: Intent; area: string }[];
+  points: { id: number; lat: number; lng: number; name: string; intent: Intent; area: string; avatar: string }[];
 }
 
 export interface Conversation {
   id: number;
-  other: { id: number; name: string; area: string; verified: boolean; last_active: string; score: number; occupation: string };
+  other: { id: number; name: string; area: string; verified: boolean; last_active: string; score: number; occupation: string; avatar: string };
   last: { id: number; body: string; mine: boolean; at: string; read: boolean } | null;
   unread: number;
+  status: "accepted" | "request";
+  incoming: boolean;
+  outgoing: boolean;
 }
 export interface Msg {
   id: number;

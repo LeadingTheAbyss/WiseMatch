@@ -45,7 +45,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </nav>
         {me && (
           <Link href="/me" className="mt-auto" aria-label="Your profile">
-            <Avatar name={me.name} id={me.id} size={40} />
+            <Avatar name={me.name} id={me.id} size={40} src={me.avatar} />
           </Link>
         )}
       </aside>
@@ -54,7 +54,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         {/* mobile top bar */}
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-line bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
           <Link href="/discover"><Logo size={22} /></Link>
-          {me && <Link href="/me"><Avatar name={me.name} id={me.id} size={32} /></Link>}
+          {me && <Link href="/me"><Avatar name={me.name} id={me.id} size={32} src={me.avatar} /></Link>}
         </header>
         <div className="px-3 pb-28 pt-4 sm:px-5 lg:px-6 lg:pb-10 lg:pt-5">{children}</div>
       </div>

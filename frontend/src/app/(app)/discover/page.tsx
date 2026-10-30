@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Heart, LayoutGrid, Map as MapIcon, MapPin, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
+import { LayoutGrid, Mail, Map as MapIcon, MapPin, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { MatchCardData, Stats } from "@/lib/types";
 import { MatchCard, MatchCardSkeleton } from "@/components/MatchCard";
-import { Avatar, EmptyState, ScoreRing } from "@/components/ui";
+import { EmptyState } from "@/components/ui";
 
 const MapView = dynamic(() => import("@/components/MapView"), { ssr: false, loading: () => <div className="skeleton h-[480px]" /> });
 
@@ -17,10 +17,6 @@ interface MatchesRes {
   pool: { initial: number; remaining: number };
   answered: number;
   items: MatchCardData[];
-}
-interface LikesRes {
-  liked_you: MatchCardData[];
-  matches: MatchCardData[];
 }
 interface Filters {
   areas: string[];
@@ -189,7 +185,6 @@ export default function Discover() {
   const [loading, setLoading] = useState(true);
   const [more, setMore] = useState(false);
   const [stats, setStats] = useState<Stats | null>(null);
-  const [likes, setLikes] = useState<LikesRes | null>(null);
 
   const set = (p: Partial<Filters>) => setF((prev) => ({ ...prev, ...p }));
 
@@ -226,7 +221,6 @@ export default function Discover() {
 
   useEffect(() => {
     api<Stats>("/stats", { auth: false }).then(setStats).catch(() => {});
-    api<LikesRes>("/likes").then(setLikes).catch(() => {});
   }, []);
 
   async function loadMore() {
@@ -283,6 +277,17 @@ export default function Discover() {
           <Link href="/onboarding" className="btn-primary"><Sparkles size={16} /> Refine my matches</Link>
         </div>
 
+        {me && me.counts.requests > 0 && (
+          <Link href="/chat?tab=requests" className="card flex items-center gap-3 border-brand/40 bg-brand/5 p-3.5 transition hover:bg-brand/10">
+            <span className="relative grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white">
+              <Mail size={17} />
+              <span className="absolute -right-0.5 -top-0.5 h-3 w-3 animate-pulse rounded-full border-2 border-white bg-rose-500" />
+            </span>
+            <span className="flex-1 text-sm"><b>{me.counts.requests} new message {me.counts.requests === 1 ? "request" : "requests"}</b> <span className="text-muted">waiting for you</span></span>
+            <span className="text-sm font-semibold text-brand">View</span>
+          </Link>
+        )}
+
         {/* search + sort row */}
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[200px] flex-1">
@@ -316,34 +321,15 @@ export default function Discover() {
           </div>
         )}
 
-        {/* liked you */}
-        {likes && likes.liked_you.length > 0 && !filtered && (
-          <section>
-            <h2 className="mb-2 flex items-center gap-2 font-display text-base font-bold"><Heart size={15} className="text-brand" /> Liked you <span className="chip !py-0">{likes.liked_you.length}</span></h2>
-            <div className="no-scrollbar -mx-3 flex gap-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
-              {likes.liked_you.map((p) => (
-                <Link key={p.id} href={`/profile/${p.id}`} className="card card-hover flex w-[200px] shrink-0 items-center gap-3 p-3">
-                  <Avatar name={p.name} id={p.id} size={44} ring />
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-semibold">{p.name.split(" ")[0]}, {p.age}</div>
-                    <div className="truncate text-[11px] text-muted">{p.area}</div>
-                  </div>
-                  <ScoreRing score={p.score} size={36} stroke={4} />
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
         {view === "map" && stats ? (
           <MapView stats={stats} you={null} selected={f.areas} onPickArea={(a) => { set({ areas: f.areas.includes(a) ? f.areas.filter((x) => x !== a) : [...f.areas, a] }); setView("list"); }} />
         ) : loading && items.length === 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <MatchCardSkeleton key={i} />)}</div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 8 }).map((_, i) => <MatchCardSkeleton key={i} />)}</div>
         ) : items.length === 0 ? (
           <div className="card"><EmptyState icon="🔎" title="No one matches these filters" body="Try widening the budget, age or location." /></div>
         ) : (
           <>
-            <div className={`grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 ${loading ? "opacity-60" : ""}`}>
+            <div className={`grid gap-4 sm:grid-cols-2 xl:grid-cols-3 ${loading ? "opacity-60" : ""}`}>
               {items.map((m, i) => <MatchCard key={m.id} m={m} featured={i < featuredCount} rank={i < featuredCount ? i + 1 : undefined} />)}
             </div>
             {data && items.length < data.total && (

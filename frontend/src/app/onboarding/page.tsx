@@ -121,7 +121,7 @@ export default function Onboarding() {
                 <div className="hidden items-center gap-2 sm:flex">
                   <div className="text-right text-[11px] leading-tight text-muted">Closing in on<br /><span className="font-semibold text-ink">{step.top[0].name.split(" ")[0]} · {step.top[0].score}%</span></div>
                   <div className="flex -space-x-2">
-                    {step.top.map((t) => <Avatar key={t.id} name={t.name} id={t.id} size={36} ring />)}
+                    {step.top.map((t) => <Avatar key={t.id} name={t.name} id={t.id} size={36} ring src={t.avatar} />)}
                   </div>
                 </div>
               )}
@@ -149,7 +149,7 @@ export default function Onboarding() {
               <p className="max-w-md text-sm text-muted">
                 We narrowed {step.pool.initial} people down to <b className="text-ink">{step.pool.remaining}</b> after {step.answered} questions. They&apos;re ranked by compatibility, best first.
               </p>
-              <div className="flex -space-x-2">{step.top.map((t) => <Avatar key={t.id} name={t.name} id={t.id} size={48} ring />)}</div>
+              <div className="flex -space-x-2">{step.top.map((t) => <Avatar key={t.id} name={t.name} id={t.id} size={48} ring src={t.avatar} />)}</div>
               <button className="btn-primary mt-2 px-8" onClick={finish}>See my matches <ArrowRight size={16} /></button>
               <button className="text-xs text-muted hover:text-ink" onClick={() => call("/agent/undo")}><RotateCcw size={12} className="mr-1 inline" /> Undo last answer</button>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { avatarUrl, initials, scoreColor } from "@/lib/format";
+import { initials, scoreColor } from "@/lib/format";
 
 export function Logo({ size = 28 }: { size?: number }) {
   return (
@@ -12,21 +12,21 @@ export function Logo({ size = 28 }: { size?: number }) {
   );
 }
 
-export function Avatar({ name, id, size = 44, ring }: { name: string; id: number; size?: number; ring?: boolean }) {
+export function Avatar({ name, id, size = 44, ring, src }: { name: string; id: number; size?: number; ring?: boolean; src?: string }) {
   const [bad, setBad] = useState(false);
   const hue = (id * 47) % 360;
   return (
     <span
-      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full ${ring ? "ring-2 ring-brand/70 ring-offset-2 ring-offset-bg" : ""}`}
-      style={{ width: size, height: size, background: `linear-gradient(135deg, hsl(${hue} 70% 55%), hsl(${(hue + 50) % 360} 70% 45%))` }}
+      className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full ${ring ? "ring-2 ring-brand/70 ring-offset-2 ring-offset-white" : ""}`}
+      style={{ width: size, height: size, background: `linear-gradient(135deg, hsl(${hue} 55% 60%), hsl(${(hue + 50) % 360} 55% 45%))` }}
     >
-      {bad ? (
+      {bad || !src ? (
         <span className="font-display font-semibold text-white" style={{ fontSize: size * 0.38 }}>
           {initials(name)}
         </span>
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatarUrl(name, id)} alt={name} width={size} height={size} loading="lazy" onError={() => setBad(true)} className="h-full w-full object-cover" />
+        <img src={src} alt={name} width={size} height={size} loading="lazy" onError={() => setBad(true)} className="h-full w-full object-cover" />
       )}
     </span>
   );

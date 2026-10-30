@@ -133,7 +133,7 @@ export default function Landing() {
             </div>
           </div>
           <div className="card absolute -bottom-5 -left-3 hidden items-center gap-3 p-3 shadow-2xl shadow-black/40 sm:flex">
-            <Avatar name="Ananya Rao" id={7} size={38} />
+            <Avatar name="Ananya Rao" id={7} size={38} src="https://images.pexels.com/photos/37951162/pexels-photo-37951162.jpeg?auto=compress&cs=tinysrgb&w=240&h=240&fit=crop" />
             <div>
               <div className="text-sm font-semibold">Ananya · Indiranagar</div>
               <div className="text-xs text-good">96% match · both into indie music</div>
@@ -168,7 +168,7 @@ export default function Landing() {
             <div className="marquee flex w-max gap-3">
               {[...strip, ...strip].map((p, i) => (
                 <div key={`${p.id}-${i}`} className="card flex items-center gap-3 px-3 py-2.5">
-                  <Avatar name={p.name} id={p.id} size={36} />
+                  <Avatar name={p.name} id={p.id} size={36} src={p.avatar} />
                   <div>
                     <div className="text-sm font-semibold">{p.name.split(" ")[0]}</div>
                     <div className="flex items-center gap-1 text-[11px] text-muted">

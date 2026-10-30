@@ -140,12 +140,12 @@ export default function MePage() {
       <div className="card relative overflow-hidden p-5">
         <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand2/20 blur-3xl" />
         <div className="relative flex flex-wrap items-center gap-4">
-          <Avatar name={me.name} id={me.id} size={76} ring />
+          <Avatar name={me.name} id={me.id} size={76} ring src={me.avatar} />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-2xl font-bold">{me.name}</h1>
             <p className="text-sm text-muted">{me.occupation || "Add your occupation"}{me.area ? ` · ${me.area}` : ""}</p>
             <div className="mt-2 flex flex-wrap gap-2 text-xs">
-              <span className="chip">💌 {me.counts.liked_you} liked you</span>
+              <span className="chip">📨 {me.counts.requests} message requests</span>
               <span className="chip">💬 {me.counts.unread} unread</span>
               <span className="chip">🧠 {me.answered} agent answers</span>
             </div>
