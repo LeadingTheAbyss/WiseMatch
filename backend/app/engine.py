@@ -178,10 +178,12 @@ def pref_score(me: dict, c: dict) -> float:
         if key.startswith("tag:"):
             has = key[4:] in c["_tags"]
             ok += 1 if (accept == ["yes"]) == has else 0
+        elif key == "religion":
+            ok += 1 if c["religion"] in accept else 0
         else:
             ok += 1 if c["traits"].get(key) in accept else 0
     for key, accept in c["prefs"].items():
-        if not accept or key in HARD_KEYS or key.startswith("tag:"):
+        if not accept or key in HARD_KEYS or key.startswith("tag:") or key == "religion":
             continue
         mine = me["traits"].get(key)
         if mine is None:

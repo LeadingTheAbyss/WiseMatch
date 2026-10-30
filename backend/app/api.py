@@ -52,6 +52,9 @@ def pref_lines(c: dict) -> list[str]:
     for key, accept in c["prefs"].items():
         if not accept:
             continue
+        if key == "religion":
+            out.append("Religion: " + " / ".join(accept))
+            continue
         if key.startswith("tag:"):
             tag = key[4:]
             if tag in TAGS:
@@ -242,7 +245,7 @@ def patch_me(body: ProfileIn, me: dict = Depends(current_user), db: Session = De
                 me["traits"][k] = v
     if "prefs" in data:
         for k, v in data["prefs"].items():
-            if k in TRAIT_QUESTIONS or k.startswith("tag:"):
+            if k in TRAIT_QUESTIONS or k.startswith("tag:") or k == "religion":
                 if v:
                     me["prefs"][k] = v
                 else:
