@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Lock, RotateCcw, Sparkles, Undo2 } from "lucide-react";
+import { ArrowRight, ChevronDown, RotateCcw, Undo2 } from "lucide-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { AgentStep, Option, Question, TraceEvent } from "@/lib/types";
-import { Avatar, Logo, SourceBadge, Spinner, useCountUp } from "@/components/ui";
+import { Avatar, Logo, Spinner, useCountUp } from "@/components/ui";
 import { AgentFeed } from "@/components/AgentFeed";
 
-function Column({ title, hint, options, selected, multi, onPick, anyOn, onAny }: {
-  title: string; hint?: string; options: Option[]; selected: string[]; multi?: boolean;
+function Column({ title, hint, options, selected, onPick, anyOn, onAny }: {
+  title: string; hint?: string; options: Option[]; selected: string | null;
   onPick: (v: string) => void; anyOn?: boolean; onAny?: () => void;
 }) {
   return (
@@ -19,19 +19,18 @@ function Column({ title, hint, options, selected, multi, onPick, anyOn, onAny }:
       <div className="mb-3 min-h-8 text-center text-[11px] leading-tight text-muted">{hint}</div>
       <div className="grid gap-2">
         {options.map((o) => {
-          const on = selected.includes(o.value);
+          const on = selected === o.value;
           return (
             <button key={o.value} type="button" onClick={() => onPick(o.value)} aria-pressed={on}
-              className={`flex items-center gap-2 rounded-xl border px-2.5 py-2.5 text-left text-[13px] font-medium leading-tight transition sm:px-3 sm:text-sm ${on ? "border-brand bg-brand text-white shadow-md shadow-brand/10" : "border-line bg-surface2 text-ink/85 hover:border-brand/50"}`}>
+              className={`flex items-center gap-2 rounded-xl border px-2.5 py-2.5 text-left text-[13px] font-semibold leading-tight transition sm:px-3 sm:text-sm ${on ? "border-brand bg-brand text-white shadow-md shadow-brand/25" : "border-line bg-white text-ink/85 hover:border-brand/50 hover:bg-surface2"}`}>
               <span className="text-lg leading-none">{o.emoji}</span>
               <span className="min-w-0">{o.label}</span>
-              {multi && <span className={`ml-auto grid h-4 w-4 shrink-0 place-items-center rounded border text-[10px] ${on ? "border-brand bg-brand text-white" : "border-line"}`}>{on ? "✓" : ""}</span>}
             </button>
           );
         })}
         {onAny && (
           <button type="button" onClick={onAny} aria-pressed={anyOn}
-            className={`rounded-xl border border-dashed px-3 py-2 text-xs font-medium transition ${anyOn ? "border-brand/70 bg-brand/10 text-white" : "border-line text-muted hover:border-brand/40"}`}>
+            className={`rounded-xl border border-dashed px-3 py-2 text-xs font-semibold transition ${anyOn ? "border-brand bg-brand/10 text-brand" : "border-line text-muted hover:border-brand/40"}`}>
             😌 Doesn&apos;t matter
           </button>
         )}
@@ -47,15 +46,15 @@ export default function Onboarding() {
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
   const [you, setYou] = useState<string | null>(null);
-  const [them, setThem] = useState<string[]>([]);
+  const [them, setThem] = useState<string | null>(null);
   const [events, setEvents] = useState<TraceEvent[]>([]);
-  const [asked, setAsked] = useState(0);
+  const [feedOpen, setFeedOpen] = useState(true);
   const started = useRef(false);
 
   const absorb = useCallback((s: AgentStep) => {
     setStep(s);
     setYou(null);
-    setThem([]);
+    setThem(null);
     setEvents((prev) => {
       const seen = new Set(prev.map((e) => e.id));
       return [...prev, ...s.trace.filter((e) => !seen.has(e.id))];
@@ -68,7 +67,7 @@ export default function Onboarding() {
     try {
       absorb(await api<AgentStep>(path, { method: "POST", body: body ?? {} }));
     } catch (e) {
-      setError(e instanceof Error ? e.message : "The agent hit a snag");
+      setError(e instanceof Error ? e.message : "Something went wrong");
     } finally {
       setBusy(false);
     }
@@ -89,35 +88,20 @@ export default function Onboarding() {
   const remaining = useCountUp(step?.pool.remaining ?? 0, 800);
   const pct = initial ? Math.max(3, Math.round(((step?.pool.remaining ?? 0) / initial) * 100)) : 100;
 
-  function pickYou(v: string) {
-    setYou(v);
-  }
-  function pickThem(v: string) {
-    if (!q) return;
-    if (q.kind === "taste") return setThem((t) => (t.includes(v) ? [] : [v]));
-    setThem((t) => (t.includes(v) ? t.filter((x) => x !== v) : [...t, v]));
-  }
-  function sameAsMe() {
-    if (you) setThem([you]);
-  }
   async function submit() {
     if (!q || !you) return;
-    const normal = them.length >= q.them_options.length ? [] : them;
-    setAsked((n) => n + 1);
-    await call("/agent/answer", { question_id: q.id, you, them: normal });
+    await call("/agent/answer", { question_id: q.id, you, them: them ? [them] : [] });
   }
   async function finish() {
     await refresh();
     router.push("/discover");
   }
 
-  const hardWarn = q?.hard && them.length > 0;
-
   return (
     <main className="mx-auto min-h-dvh max-w-6xl px-3 pb-28 pt-4 sm:px-6">
       <header className="mb-4 flex items-center justify-between">
         <Logo />
-        <button className="text-xs font-medium text-muted underline-offset-4 hover:text-ink hover:underline" onClick={finish}>
+        <button className="text-xs font-semibold text-muted underline-offset-4 hover:text-brand hover:underline" onClick={finish}>
           Skip to matches
         </button>
       </header>
@@ -127,7 +111,7 @@ export default function Onboarding() {
           <div className="card p-4 sm:p-5">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-xs font-medium uppercase tracking-wide text-muted">People still in the running</div>
+                <div className="text-xs font-semibold uppercase tracking-wide text-muted">People still in the running</div>
                 <div className="font-display text-4xl font-extrabold leading-none sm:text-5xl">
                   <span className="grad-text">{remaining}</span>
                   <span className="ml-2 text-base font-medium text-muted">of {initial || "…"}</span>
@@ -143,7 +127,7 @@ export default function Onboarding() {
               )}
             </div>
             <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-line">
-              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundImage: "linear-gradient(90deg,#8b5cf6,#a78bfa)" }} />
+              <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundImage: "linear-gradient(90deg,#6d28d9,#a78bfa)" }} />
             </div>
             <div className="mt-3 flex items-center justify-between text-xs text-muted">
               <span>Question {Math.min((step?.answered ?? 0) + 1, step?.max_questions ?? 12)} of up to {step?.max_questions ?? 12}</span>
@@ -152,7 +136,7 @@ export default function Onboarding() {
           </div>
 
           {error && (
-            <div className="card mt-4 border-rose-500/40 p-4 text-sm text-rose-600">
+            <div className="card mt-4 border-rose-300 p-4 text-sm text-rose-600">
               {error}
               <button className="btn-ghost ml-3 !py-1.5" onClick={() => call("/agent/next")}>Retry</button>
             </div>
@@ -163,51 +147,37 @@ export default function Onboarding() {
               <div className="text-5xl">🎯</div>
               <h2 className="font-display text-2xl font-bold sm:text-3xl">Found your people.</h2>
               <p className="max-w-md text-sm text-muted">
-                The agent narrowed {step.pool.initial} people down to <b className="text-ink">{step.pool.remaining}</b> after {step.answered} questions. They&apos;re ranked by compatibility, best first.
+                We narrowed {step.pool.initial} people down to <b className="text-ink">{step.pool.remaining}</b> after {step.answered} questions. They&apos;re ranked by compatibility, best first.
               </p>
               <div className="flex -space-x-2">{step.top.map((t) => <Avatar key={t.id} name={t.name} id={t.id} size={48} ring />)}</div>
               <button className="btn-primary mt-2 px-8" onClick={finish}>See my matches <ArrowRight size={16} /></button>
+              <button className="text-xs text-muted hover:text-ink" onClick={() => call("/agent/undo")}><RotateCcw size={12} className="mr-1 inline" /> Undo last answer</button>
             </div>
           ) : q ? (
             <div key={q.id} className={`card anim-in mt-4 overflow-hidden ${busy ? "opacity-70" : ""}`}>
               <div className="border-b border-line p-4 sm:p-5">
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <span className="chip border-brand/40 bg-brand/10 text-brand"><Sparkles size={12} /> {q.kind === "taste" ? "Taste question" : "Lifestyle"}</span>
-                  {q.hard && <span className="chip border-amber-500/40 bg-amber-500/10 text-amber-700"><Lock size={11} /> Deal-breaker</span>}
-                  <SourceBadge source={q.by_agent ? "agent" : "engine"} />
-                </div>
                 <h1 className="font-display text-2xl font-bold leading-tight sm:text-3xl">
                   {q.kind === "taste" && <span className="mr-2">{q.emoji}</span>}
                   {q.text}
                 </h1>
-                <p className="mt-2 text-xs leading-relaxed text-muted sm:text-sm">🧠 {q.why}</p>
                 {q.kind === "taste" && q.examples.length > 0 && (
                   <div className="mt-3 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] uppercase tracking-wide text-muted">e.g.</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">e.g.</span>
                     {q.examples.map((x) => (
                       <span key={x.id} className="chip !py-0.5">{x.name}</span>
                     ))}
-                    <SourceBadge source={q.examples[0]?.source} />
                   </div>
                 )}
               </div>
 
               <div className="grid grid-cols-2 divide-x divide-line">
-                <Column title="You" hint="Which one is you?" options={q.options} selected={you ? [you] : []} onPick={pickYou} />
-                <Column title="Them" hint={q.them_text} options={q.them_options} selected={them} multi={q.kind === "trait"} onPick={pickThem} anyOn={them.length === 0} onAny={() => setThem([])} />
-              </div>
-
-              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-surface2/50 px-4 py-3 text-xs text-muted">
-                <span>
-                  {hardWarn ? "🔒 Anyone who doesn't fit is removed immediately." : q.hard ? "Pick \"Them\" only if it's a must." : "This only nudges the match score, nobody gets removed."}
-                </span>
-                {you && <button className="font-medium text-brand hover:underline" onClick={sameAsMe}>Same as me</button>}
+                <Column title="You" hint="Which one is you?" options={q.options} selected={you} onPick={setYou} />
+                <Column title="Them" hint={q.them_text} options={q.them_options} selected={them} onPick={setThem} anyOn={them === null} onAny={() => setThem(null)} />
               </div>
             </div>
           ) : (
             <div className="card mt-4 space-y-3 p-5">
               <div className="skeleton h-6 w-3/4" />
-              <div className="skeleton h-4 w-1/2" />
               <div className="grid grid-cols-2 gap-3 pt-2">
                 {[0, 1, 2, 3, 4, 5].map((i) => <div key={i} className="skeleton h-12" />)}
               </div>
@@ -217,17 +187,25 @@ export default function Onboarding() {
 
         <aside className="order-last min-w-0">
           <div className="card p-4 lg:sticky lg:top-4">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="font-display font-semibold">Agent activity</div>
-              <span className="text-[11px] text-muted">live</span>
-            </div>
-            <AgentFeed events={events} pending={busy} max={7} />
+            <button type="button" onClick={() => setFeedOpen((o) => !o)} aria-expanded={feedOpen} className="flex w-full items-center justify-between gap-2 text-left">
+              <span className="font-display font-bold">Agent activity</span>
+              <span className="flex items-center gap-2 text-[11px] text-muted">
+                {busy && <span className="dot-pulse h-2 w-2 rounded-full bg-brand" />}
+                {events.length} {events.length === 1 ? "event" : "events"}
+                <ChevronDown size={16} className={`transition-transform ${feedOpen ? "rotate-180" : ""}`} />
+              </span>
+            </button>
+            {feedOpen && (
+              <div className="mt-3">
+                <AgentFeed events={events} pending={busy} max={7} />
+              </div>
+            )}
           </div>
         </aside>
       </div>
 
       {!step?.done && q && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/90 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 backdrop-blur">
           <div className="mx-auto flex max-w-6xl items-center gap-3 px-3 py-3 sm:px-6">
             <button className="btn-ghost !px-3" disabled={busy || (step?.answered ?? 0) === 0} onClick={() => call("/agent/undo")} aria-label="Undo last answer">
               <Undo2 size={16} /> <span className="hidden sm:inline">Undo</span>
@@ -239,11 +217,6 @@ export default function Onboarding() {
               {busy ? <Spinner /> : <>Next <ArrowRight size={16} /></>}
             </button>
           </div>
-        </div>
-      )}
-      {step?.done && asked > 0 && (
-        <div className="mt-4 text-center">
-          <button className="text-xs text-muted hover:text-ink" onClick={() => call("/agent/undo")}><RotateCcw size={12} className="mr-1 inline" /> Undo last answer</button>
         </div>
       )}
     </main>
