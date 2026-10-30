@@ -143,7 +143,7 @@ export default function MePage() {
           <Avatar name={me.name} id={me.id} size={76} ring />
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-2xl font-bold">{me.name}</h1>
-            <p className="text-sm text-muted">{me.occupation || "Add your occupation"} · {me.area}</p>
+            <p className="text-sm text-muted">{me.occupation || "Add your occupation"}{me.area ? ` · ${me.area}` : ""}</p>
             <div className="mt-2 flex flex-wrap gap-2 text-xs">
               <span className="chip">💌 {me.counts.liked_you} liked you</span>
               <span className="chip">💬 {me.counts.unread} unread</span>
@@ -165,12 +165,27 @@ export default function MePage() {
           <div><label className="label">Occupation</label><input className="input" value={b("occupation")} onChange={(e) => setBasics({ ...basics, occupation: e.target.value })} /></div>
           <div>
             <label className="label">Neighbourhood</label>
-            <select className="input" value={b("area")} onChange={(e) => setBasics({ ...basics, area: e.target.value })}>{cat.areas.map((a) => <option key={a.name}>{a.name}</option>)}</select>
+            <select className="input" value={b("area")} onChange={(e) => setBasics({ ...basics, area: e.target.value })}><option value="">Any location</option>{cat.areas.map((a) => <option key={a.name}>{a.name}</option>)}</select>
           </div>
           <div>
-            <label className="label">Budget · {inrFull(Number(basics.budget_min ?? 0))} to {inrFull(Number(basics.budget_max ?? 0))}</label>
-            <input type="range" min={5000} max={50000} step={500} value={Number(basics.budget_min ?? 10000)} onChange={(e) => setBasics({ ...basics, budget_min: Math.min(Number(e.target.value), Number(basics.budget_max) - 1000) })} className="w-full accent-violet-500" />
-            <input type="range" min={5000} max={50000} step={500} value={Number(basics.budget_max ?? 20000)} onChange={(e) => setBasics({ ...basics, budget_max: Math.max(Number(e.target.value), Number(basics.budget_min) + 1000) })} className="w-full accent-purple-500" />
+            <label className="label">Budget per month <span className="font-normal normal-case text-muted/70">(optional)</span></label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">₹</span>
+                <input className="input !pl-6" inputMode="numeric" placeholder="Min" value={basics.budget_min ? String(basics.budget_min) : ""} onChange={(e) => setBasics({ ...basics, budget_min: Number(e.target.value.replace(/\D/g, "")) || 0 })} aria-label="Minimum budget" />
+              </div>
+              <span className="text-muted">–</span>
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted">₹</span>
+                <input className="input !pl-6" inputMode="numeric" placeholder="Max" value={basics.budget_max ? String(basics.budget_max) : ""} onChange={(e) => setBasics({ ...basics, budget_max: Number(e.target.value.replace(/\D/g, "")) || 0 })} aria-label="Maximum budget" />
+              </div>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {([["Under ₹10k", 0, 10000], ["₹10k – 15k", 10000, 15000], ["₹15k – 20k", 15000, 20000], ["₹20k – 30k", 20000, 30000], ["₹30k+", 30000, 60000]] as [string, number, number][]).map(([l, lo, hi]) => (
+                <Pill key={l} on={basics.budget_min === lo && basics.budget_max === hi} onClick={() => setBasics({ ...basics, budget_min: lo, budget_max: hi })}>{l}</Pill>
+              ))}
+              {(basics.budget_min || basics.budget_max) ? <Pill on={false} onClick={() => setBasics({ ...basics, budget_min: 0, budget_max: 0 })}>Clear</Pill> : null}
+            </div>
           </div>
           <div>
             <label className="label">I&apos;m</label>

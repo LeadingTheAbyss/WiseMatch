@@ -108,7 +108,6 @@ export default function Landing() {
               <span>Question 4 of ~8</span>
             </div>
             <div className="font-display text-xl font-semibold">Do you vibe with indie &amp; acoustic music?</div>
-            <p className="mt-1 text-xs text-muted">🧠 Splits the 312 remaining people 48 / 52, the most useful cut right now.</p>
             <div className="mt-4 grid grid-cols-2 divide-x divide-line rounded-xl border border-line">
               {[
                 { t: "You", o: ["👍 Yes, I'm into it", "🙅 Not really"], on: 0 },
@@ -182,6 +181,19 @@ export default function Landing() {
           </div>
         </section>
       )}
+
+      <section className="my-8 overflow-hidden rounded-3xl bg-deep px-4 py-10 sm:px-10">
+        <div className="mx-auto max-w-2xl rounded-2xl bg-white p-5 shadow-xl sm:p-6">
+          <h2 className="font-display text-xl font-bold sm:text-2xl">Start searching for a roommate today</h2>
+          <p className="mt-1 text-sm text-muted">{stats ? stats.total : "650"}+ people across 28 Bangalore neighbourhoods are already on WiseMatch.</p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <input id="name2" className="input" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && start()} maxLength={40} aria-label="Your first name" />
+            <button className="btn-primary shrink-0 sm:px-6" onClick={start} disabled={busy}>
+              {busy ? <Spinner /> : <>Get started <ArrowRight size={16} /></>}
+            </button>
+          </div>
+        </div>
+      </section>
 
       <footer className="mt-auto border-t border-line py-6 text-center text-xs text-muted">
         WiseMatch · built for the Qloo LLM Hackathon · MIT licensed

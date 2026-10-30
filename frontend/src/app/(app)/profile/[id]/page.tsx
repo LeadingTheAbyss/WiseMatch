@@ -144,7 +144,7 @@ export default function ProfilePage() {
             </div>
             <p className="mt-1 text-sm text-muted">{p.occupation} · {genderLabel(p.gender)}</p>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-              <span className="inline-flex items-center gap-1"><MapPin size={14} /> {p.area} · {p.distance_km} km from you</span>
+              <span className="inline-flex items-center gap-1"><MapPin size={14} /> {p.area}{p.distance_km != null ? ` · ${p.distance_km} km from you` : ""}</span>
               <span>🗓️ Moving in: {p.move_in}</span>
               <span className="text-good">● {p.last_active}</span>
             </div>
