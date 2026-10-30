@@ -117,7 +117,7 @@ def rank_questions(me: dict, pool: list[dict], limit: int = 6) -> list[dict]:
         st = split_stats(pool, qid, ["yes", "no"])
         if not st or st["max_share"] > 0.88:
             continue
-        score = st["entropy"] * 0.92 * (0.7 if taste_streak else 1.0)
+        score = st["entropy"] * 1.2 * (0.7 if taste_streak else 1.0)
         out.append({"id": qid, "kind": "taste", "label": label, "hard": False, "score": score, "stats": st})
     out.sort(key=lambda x: x["score"], reverse=True)
     return out[:limit]

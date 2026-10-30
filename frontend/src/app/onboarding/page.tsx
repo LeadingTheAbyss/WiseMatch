@@ -233,7 +233,7 @@ export default function Onboarding() {
               <Undo2 size={16} /> <span className="hidden sm:inline">Undo</span>
             </button>
             {(step?.answered ?? 0) >= 3 && (
-              <button className="btn-ghost !px-3" onClick={finish}>See matches now</button>
+              <button className="btn-ghost !px-3" onClick={finish}><span className="sm:hidden">Matches</span><span className="hidden sm:inline">See matches now</span></button>
             )}
             <button className="btn-primary ml-auto min-w-36 flex-1 sm:flex-none" disabled={busy || !you} onClick={submit}>
               {busy ? <Spinner /> : <>Next <ArrowRight size={16} /></>}

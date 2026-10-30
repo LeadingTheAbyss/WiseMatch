@@ -183,7 +183,13 @@ async def next_step(me: dict) -> dict:
     question = None
     done = len(answered) >= MAX_QUESTIONS or len(pool) <= STOP_POOL
     if not done:
-        cands = rank_questions(me, pool)
+        cands = rank_questions(me, pool, limit=40)
+        recent = me["answers"].get(ANSWER_META, [])[-2:]
+        if len(recent) == 2 and not any(q.startswith("tag:") for q in recent):
+            # two lifestyle questions in a row: the next one is a taste question grounded in Qloo
+            taste_only = [c for c in cands if c["kind"] == "taste"]
+            cands = taste_only or cands
+        cands = cands[:6]
         if not cands:
             done = True
         else:
