@@ -152,7 +152,8 @@ def lifestyle_sim(me: dict, c: dict) -> float:
             s = 1 - abs(vals.index(a) - vals.index(b)) / (len(vals) - 1)
         num += s * w
         den += w
-    return num / den if den else 0.6
+    # shrink toward a neutral prior until we actually know enough about both people
+    return (num + 2.0 * 0.6) / (den + 2.0)
 
 
 def _custom_hits(me: dict, c: dict) -> tuple[float, float]:
@@ -203,6 +204,8 @@ def taste_score(me: dict, c: dict) -> tuple[float, list[str], list[str]]:
     t = 0.55 * overlap + 0.45 * jac * 1.6
     t += min(0.12, 0.04 * len(shared_ents))
     t -= 0.06 * len(me["_anti"] & b)
+    conf = len(a) / (len(a) + 2)  # few known tastes: stay close to neutral
+    t = conf * t + (1 - conf) * 0.45
     return max(0.0, min(1.0, t)), shared, shared_ents
 
 

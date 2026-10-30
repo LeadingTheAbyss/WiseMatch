@@ -132,7 +132,8 @@ async def _choose(me: dict, pool_n: int, cands: list[dict]) -> tuple[dict, str, 
         "from the candidates: prefer a balanced split of the pool (high balance_score), take a deal_breaker "
         "question when its split is meaningful, and avoid three taste questions in a row. "
         'Reply with JSON only: {"question_id": "<id from candidates>", "question": "<friendly question, max 12 words, '
-        'second person, no emoji>", "why": "<max 22 words explaining the pick using real numbers from split_counts>"}'
+        'second person, no emoji>", "why": "<max 20 words, plain English for the end user, quoting real numbers from split_counts, '
+        'e.g. Splits the 442 people roughly 32/46/22. Never mention balance_score or ids>"}'
     )
     res = await llm.complete_json(
         [{"role": "system", "content": system}, {"role": "user", "content": json.dumps(payload)}],
