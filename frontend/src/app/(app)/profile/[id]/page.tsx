@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, BadgeCheck, Heart, MapPin, MessageCircle, Sparkles, TriangleAlert } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MapPin, Send, Sparkles, TriangleAlert, X } from "lucide-react";
 import { api, ApiError } from "@/lib/api";
 import { genderLabel, inrFull, range, scoreLabel } from "@/lib/format";
 import type { Entity, ProfileData } from "@/lib/types";
-import { Avatar, Skeleton, ScoreRing, SourceBadge } from "@/components/ui";
+import { Avatar, Skeleton, ScoreRing, SourceBadge, Spinner } from "@/components/ui";
 
 interface Explain {
   summary: string;
@@ -62,8 +62,9 @@ export default function ProfilePage() {
   const [error, setError] = useState("");
   const [ex, setEx] = useState<Explain | null>(null);
   const [exLoading, setExLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
-  const [banner, setBanner] = useState("");
+  const [compose, setCompose] = useState(false);
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -77,7 +78,6 @@ export default function ProfilePage() {
     setP(null);
     setEx(null);
     setExLoading(true);
-    setBanner("");
     void load();
     api<Explain>(`/users/${id}/explain`, { method: "POST" })
       .then(setEx)
@@ -85,26 +85,21 @@ export default function ProfilePage() {
       .finally(() => setExLoading(false));
   }, [id, load]);
 
-  async function toggleLike() {
-    if (!p) return;
-    setBusy(true);
-    try {
-      if (p.liked) {
-        await api(`/users/${p.id}/like`, { method: "DELETE" });
-        setBanner("");
-      } else {
-        const r = await api<{ mutual: boolean }>(`/users/${p.id}/like`, { method: "POST" });
-        setBanner(r.mutual ? "match" : "liked");
-      }
-      await load();
-    } finally {
-      setBusy(false);
-    }
+  function openCompose(draft?: string) {
+    const first = p?.name.split(" ")[0] ?? "";
+    setText(draft ?? `Hi ${first}! I came across your profile on WiseMatch and think we could be a good fit. Are you still looking?`);
+    setCompose(true);
   }
 
-  function chat(draft?: string) {
-    if (!p?.conversation_id) return;
-    router.push(`/chat/${p.conversation_id}${draft ? `?draft=${encodeURIComponent(draft)}` : ""}`);
+  async function sendRequest() {
+    if (!p || !text.trim()) return;
+    setSending(true);
+    try {
+      const r = await api<{ conversation_id: number }>(`/users/${p.id}/request`, { method: "POST", body: { body: text.trim() } });
+      router.push(`/chat/${r.conversation_id}`);
+    } catch {
+      setSending(false);
+    }
   }
 
   if (error) {
@@ -135,7 +130,7 @@ export default function ProfilePage() {
       <div className="card relative overflow-hidden p-4 sm:p-6">
         <div className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full bg-brand/20 blur-3xl" />
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
-          <Avatar name={p.name} id={p.id} size={96} ring />
+          <Avatar name={p.name} id={p.id} size={96} ring src={p.avatar} />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-2xl font-bold sm:text-3xl">{p.name}</h1>
@@ -162,21 +157,16 @@ export default function ProfilePage() {
         <p className="relative mt-4 text-sm leading-relaxed text-ink/90">{p.bio}</p>
 
         <div className="relative mt-5 flex flex-wrap items-center gap-2">
-          <button onClick={toggleLike} disabled={busy} className={p.liked ? "btn-ghost border-purple-400/60 text-purple-700" : "btn-primary"}>
-            <Heart size={16} fill={p.liked ? "currentColor" : "none"} /> {p.liked ? "Liked" : "Like"}
-          </button>
-          <button className="btn-ghost" disabled={!p.conversation_id} onClick={() => chat()} title={p.conversation_id ? "" : "Both of you need to like each other first"}>
-            <MessageCircle size={16} /> {p.conversation_id ? "Message" : "Match to chat"}
-          </button>
-          {p.liked_me && !p.liked && <span className="chip border-purple-400/40 bg-purple-500/10 text-purple-700">💌 Liked you</span>}
+          {!p.conversation ? (
+            <button className="btn-primary" onClick={() => openCompose()}><Send size={16} /> Send message request</button>
+          ) : p.conversation.status === "accepted" ? (
+            <Link href={`/chat/${p.conversation.id}`} className="btn-primary"><Send size={16} /> Open chat</Link>
+          ) : p.conversation.incoming ? (
+            <Link href={`/chat/${p.conversation.id}`} className="btn-primary">Review their request</Link>
+          ) : (
+            <Link href={`/chat/${p.conversation.id}`} className="btn-ghost">Request sent · view</Link>
+          )}
         </div>
-        {(banner === "match" || (p.mutual && banner)) && (
-          <div className="relative mt-4 rounded-xl border border-purple-400/40 bg-gradient-to-r from-brand/20 to-brand2/20 p-4 text-sm">
-            🎉 <b>It&apos;s a match!</b> You and {p.name.split(" ")[0]} liked each other.
-            <button className="ml-2 font-semibold text-purple-700 underline underline-offset-4" onClick={() => chat()}>Say hi</button>
-          </div>
-        )}
-        {banner === "liked" && !p.mutual && <div className="relative mt-4 rounded-xl border border-line bg-surface2 p-3 text-sm text-muted">Liked. We&apos;ll let you know if {p.name.split(" ")[0]} likes you back.</div>}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
@@ -241,13 +231,12 @@ export default function ProfilePage() {
             ) : (
               <div className="grid gap-2">
                 {(ex?.icebreakers ?? []).map((t) => (
-                  <button key={t} onClick={() => (p.conversation_id ? chat(t) : setBanner("need-like"))} className="rounded-xl border border-line bg-surface2 px-3 py-2.5 text-left text-sm transition hover:border-brand/60">
+                  <button key={t} onClick={() => (p.conversation ? router.push(`/chat/${p.conversation.id}?draft=${encodeURIComponent(t)}`) : openCompose(t))} className="rounded-xl border border-line bg-surface2 px-3 py-2.5 text-left text-sm transition hover:border-brand/60">
                     💬 {t}
                   </button>
                 ))}
               </div>
             )}
-            {banner === "need-like" && !p.conversation_id && <p className="mt-2 text-xs text-amber-700">Like each other first, then you can chat.</p>}
           </Section>
 
           <Section title="Spots you'd both love" right={<SourceBadge source={ex?.spots_source ?? "mock"} />}>
@@ -284,6 +273,29 @@ export default function ProfilePage() {
           </Section>
         </div>
       </div>
+
+      {compose && (
+        <div className="fixed inset-0 z-50 grid place-items-end bg-deep/50 sm:place-items-center sm:p-4" onClick={() => setCompose(false)}>
+          <div className="anim-in w-full max-w-lg rounded-t-3xl bg-white p-5 shadow-2xl sm:rounded-3xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between">
+              <h2 className="font-display text-xl font-bold">Message {p.name.split(" ")[0]}</h2>
+              <button onClick={() => setCompose(false)} aria-label="Close"><X size={20} /></button>
+            </div>
+            <p className="mt-1 text-sm text-muted">This lands in their message requests. You can chat freely once they accept.</p>
+            <textarea className="input mt-4 min-h-28" value={text} onChange={(e) => setText(e.target.value)} maxLength={500} autoFocus />
+            {ex && ex.icebreakers.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {ex.icebreakers.map((t) => (
+                  <button key={t} className="chip text-left hover:border-brand/50" onClick={() => setText(t)}>{t.length > 52 ? t.slice(0, 50) + "…" : t}</button>
+                ))}
+              </div>
+            )}
+            <button className="btn-primary mt-4 w-full !py-3" disabled={!text.trim() || sending} onClick={sendRequest}>
+              {sending ? <Spinner size={16} /> : "Send request"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {L && (
         <Section title="The room" right={<span className="chip border-purple-400/40 bg-purple-500/10 text-purple-700">{inrFull(L.rent)}/mo</span>}>
