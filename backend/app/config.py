@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     qloo_api_key: str = ""
     qloo_base_url: str = "https://hackathon.api.qloo.com"
     groq_api_key: str = ""
-    groq_model: str = "llama-3.3-70b-versatile"
+    groq_model: str = "openai/gpt-oss-120b"
     jwt_secret: str = "dev-secret-change-me"
     cors_origins: str = "http://localhost:3000"
     seed_users: int = 650
