@@ -23,6 +23,14 @@ def log(kind: str, title: str, detail: str = "", ms: int | None = None, source: 
     return event
 
 
+def last_id() -> int:
+    return EVENTS[-1]["id"] if EVENTS else 0
+
+
+def since(event_id: int) -> list[dict]:
+    return [e for e in EVENTS if e["id"] > event_id]
+
+
 class Timer:
     def __enter__(self):
         self.start = time.perf_counter()
