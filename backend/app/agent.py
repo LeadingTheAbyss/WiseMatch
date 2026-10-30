@@ -196,7 +196,7 @@ async def next_step(me: dict) -> dict:
             trace.log("decide", f"Scored {len(cands)} candidate questions", ", ".join(f"{c['id']} {c['score']:.2f}" for c in cands[:4]), source="engine")
             cand, text, why, by_agent = await _choose(me, len(pool), cands)
             question = await _build(me, cand, text, why, len(pool), by_agent)
-            trace.log("decide", f"Next question: {cand['id']}", why, source="agent" if by_agent else "engine")
+            trace.log("decide", f"Next question: {cand['id']}", "", source="agent" if by_agent else "engine")
     return {
         "pool": {"initial": initial, "remaining": len(pool), "removed": initial - len(pool)},
         "answered": len(answered),

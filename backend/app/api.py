@@ -132,7 +132,8 @@ def catalog():
 @router.get("/stats")
 def stats():
     by_area: dict[str, list[dict]] = {}
-    for u in USERS.values():
+    located = [u for u in USERS.values() if u["area"] in AREAS]  # guests may have no location yet
+    for u in located:
         by_area.setdefault(u["area"], []).append(u)
     areas = []
     for name, people in by_area.items():
@@ -146,7 +147,7 @@ def stats():
         "rooms": sum(1 for u in USERS.values() if u["intent"] == "has_room"),
         "areas": areas,
         "top_tags": [{"key": k, "label": TAGS[k][0], "emoji": TAGS[k][1], "count": n} for k, n in tag_counts.most_common(10) if k in TAGS],
-        "points": [{"id": u["id"], "lat": u["lat"], "lng": u["lng"], "name": u["name"], "intent": u["intent"], "area": u["area"]} for u in USERS.values()],
+        "points": [{"id": u["id"], "lat": u["lat"], "lng": u["lng"], "name": u["name"], "intent": u["intent"], "area": u["area"]} for u in located],
     }
 
 
