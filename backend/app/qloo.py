@@ -153,6 +153,7 @@ class QlooClient:
                 hit = await self.resolve(n)
                 if hit and hit["id"]:
                     ids.append(hit["id"])
+            ids = list(dict.fromkeys(ids))
             rows = await self.insights("place", ids, take=take) if ids else None
             if rows:
                 return {"source": "qloo", "spots": rows[:take]}
