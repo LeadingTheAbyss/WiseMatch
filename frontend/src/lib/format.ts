@@ -36,10 +36,10 @@ export function initials(name: string): string {
 }
 
 export function scoreColor(score: number): string {
-  if (score >= 90) return "#34d399";
-  if (score >= 80) return "#a78bfa";
-  if (score >= 70) return "#f0abfc";
-  return "#9494ab";
+  if (score >= 90) return "#059669";
+  if (score >= 80) return "#6d28d9";
+  if (score >= 70) return "#8b5cf6";
+  return "#8b85a1";
 }
 
 export function scoreLabel(score: number): string {

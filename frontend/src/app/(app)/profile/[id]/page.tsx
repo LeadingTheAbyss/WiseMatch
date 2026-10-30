@@ -140,7 +140,7 @@ export default function ProfilePage() {
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="font-display text-2xl font-bold sm:text-3xl">{p.name}</h1>
               <span className="text-lg text-muted">{p.age}</span>
-              {p.verified && <span className="chip border-sky-500/40 bg-sky-500/10 text-sky-200"><BadgeCheck size={13} /> Verified</span>}
+              {p.verified && <span className="chip border-sky-500/40 bg-sky-500/10 text-sky-700"><BadgeCheck size={13} /> Verified</span>}
             </div>
             <p className="mt-1 text-sm text-muted">{p.occupation} · {genderLabel(p.gender)}</p>
             <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
@@ -162,18 +162,18 @@ export default function ProfilePage() {
         <p className="relative mt-4 text-sm leading-relaxed text-ink/90">{p.bio}</p>
 
         <div className="relative mt-5 flex flex-wrap items-center gap-2">
-          <button onClick={toggleLike} disabled={busy} className={p.liked ? "btn-ghost border-pink-400/60 text-pink-200" : "btn-primary"}>
+          <button onClick={toggleLike} disabled={busy} className={p.liked ? "btn-ghost border-purple-400/60 text-purple-700" : "btn-primary"}>
             <Heart size={16} fill={p.liked ? "currentColor" : "none"} /> {p.liked ? "Liked" : "Like"}
           </button>
           <button className="btn-ghost" disabled={!p.conversation_id} onClick={() => chat()} title={p.conversation_id ? "" : "Both of you need to like each other first"}>
             <MessageCircle size={16} /> {p.conversation_id ? "Message" : "Match to chat"}
           </button>
-          {p.liked_me && !p.liked && <span className="chip border-pink-400/40 bg-pink-500/10 text-pink-200">💌 Liked you</span>}
+          {p.liked_me && !p.liked && <span className="chip border-purple-400/40 bg-purple-500/10 text-purple-700">💌 Liked you</span>}
         </div>
         {(banner === "match" || (p.mutual && banner)) && (
-          <div className="relative mt-4 rounded-xl border border-pink-400/40 bg-gradient-to-r from-brand/20 to-brand2/20 p-4 text-sm">
+          <div className="relative mt-4 rounded-xl border border-purple-400/40 bg-gradient-to-r from-brand/20 to-brand2/20 p-4 text-sm">
             🎉 <b>It&apos;s a match!</b> You and {p.name.split(" ")[0]} liked each other.
-            <button className="ml-2 font-semibold text-pink-200 underline underline-offset-4" onClick={() => chat()}>Say hi</button>
+            <button className="ml-2 font-semibold text-purple-700 underline underline-offset-4" onClick={() => chat()}>Say hi</button>
           </div>
         )}
         {banner === "liked" && !p.mutual && <div className="relative mt-4 rounded-xl border border-line bg-surface2 p-3 text-sm text-muted">Liked. We&apos;ll let you know if {p.name.split(" ")[0]} likes you back.</div>}
@@ -193,7 +193,7 @@ export default function ProfilePage() {
               ))}
             </ul>
             {p.heads_up.length > 0 && (
-              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-200">
+              <div className="mt-4 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm text-amber-700">
                 {p.heads_up.map((h) => <div key={h} className="flex items-start gap-2"><TriangleAlert size={14} className="mt-0.5 shrink-0" />{h}</div>)}
               </div>
             )}
@@ -205,7 +205,7 @@ export default function ProfilePage() {
                 <div key={k}>
                   <div className="mb-1 flex justify-between text-xs"><span>{icon} {label}</span><b>{p.breakdown[k]}%</b></div>
                   <div className="h-2 overflow-hidden rounded-full bg-line">
-                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${p.breakdown[k]}%`, backgroundImage: "linear-gradient(90deg,#8b5cf6,#ec4899)" }} />
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${p.breakdown[k]}%`, backgroundImage: "linear-gradient(90deg,#8b5cf6,#a78bfa)" }} />
                   </div>
                 </div>
               ))}
@@ -216,7 +216,7 @@ export default function ProfilePage() {
             <div className="flex flex-wrap gap-1.5">
               {p.all_tags.map((t) => {
                 const shared = p.shared_tags.some((s) => s.key === t.key);
-                return <span key={t.key} className={`chip ${shared ? "border-brand/60 bg-brand/20 text-white" : ""}`}>{t.emoji} {t.label}</span>;
+                return <span key={t.key} className={`chip ${shared ? "border-brand/60 bg-brand text-white" : ""}`}>{t.emoji} {t.label}</span>;
               })}
             </div>
             {p.taste.length > 0 && (
@@ -224,7 +224,7 @@ export default function ProfilePage() {
                 <div className="label mt-4">Loves</div>
                 <div className="flex flex-wrap gap-1.5">
                   {p.taste.map((e) => (
-                    <span key={e.id} className={`chip !text-[11px] ${p.shared_entities.includes(e.name) ? "border-good/60 bg-good/10 text-emerald-200" : ""}`}>
+                    <span key={e.id} className={`chip !text-[11px] ${p.shared_entities.includes(e.name) ? "border-good/60 bg-good/10 text-emerald-700" : ""}`}>
                       {e.name}<span className="text-muted">· {e.type.replace("_", " ")}</span>
                     </span>
                   ))}
@@ -247,7 +247,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             )}
-            {banner === "need-like" && !p.conversation_id && <p className="mt-2 text-xs text-amber-300">Like each other first, then you can chat.</p>}
+            {banner === "need-like" && !p.conversation_id && <p className="mt-2 text-xs text-amber-700">Like each other first, then you can chat.</p>}
           </Section>
 
           <Section title="Spots you'd both love" right={<SourceBadge source={ex?.spots_source ?? "mock"} />}>
@@ -286,7 +286,7 @@ export default function ProfilePage() {
       </div>
 
       {L && (
-        <Section title="The room" right={<span className="chip border-pink-400/40 bg-pink-500/10 text-pink-200">{inrFull(L.rent)}/mo</span>}>
+        <Section title="The room" right={<span className="chip border-purple-400/40 bg-purple-500/10 text-purple-700">{inrFull(L.rent)}/mo</span>}>
           <Gallery hue={L.hue} count={L.photos} />
           <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_auto]">
             <div>

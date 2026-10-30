@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #07070c;
-  --color-surface: #0f0f17;
-  --color-surface2: #161622;
-  --color-line: #242436;
-  --color-ink: #f3f3f9;
-  --color-muted: #9494ab;
-  --color-brand: #8b5cf6;
-  --color-brand2: #ec4899;
-  --color-good: #34d399;
-  --color-warn: #fbbf24;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface2: #f6f3fd;
+  --color-line: #e6e0f3;
+  --color-ink: #1a1030;
+  --color-muted: #6b6485;
+  --color-brand: #6d28d9;
+  --color-brand2: #8b5cf6;
+  --color-deep: #3b0b6f;
+  --color-good: #059669;
+  --color-warn: #d97706;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-outfit), var(--font-inter), ui-sans-serif, sans-serif;
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,
@@ -29,52 +30,50 @@ body {
 
 body {
   min-height: 100dvh;
-  background-image:
-    radial-gradient(900px 500px at 85% -10%, rgba(139, 92, 246, 0.16), transparent 60%),
-    radial-gradient(700px 420px at -5% 10%, rgba(236, 72, 153, 0.1), transparent 60%);
+  background-image: radial-gradient(1000px 420px at 92% -8%, rgba(139, 92, 246, 0.1), transparent 60%);
   background-attachment: fixed;
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.45);
+  background: rgba(139, 92, 246, 0.3);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2a40 transparent;
+  scrollbar-color: #cfc4ea transparent;
 }
 
 @utility card {
-  @apply rounded-2xl border border-line bg-surface;
+  @apply rounded-2xl border border-line bg-surface shadow-sm shadow-purple-900/5;
 }
 @utility card-hover {
-  @apply transition duration-200 hover:-translate-y-0.5 hover:border-brand/50 hover:bg-surface2;
+  @apply transition duration-200 hover:-translate-y-0.5 hover:border-brand/40 hover:shadow-lg hover:shadow-purple-900/10;
 }
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn text-white shadow-lg shadow-brand/20;
+  @apply btn text-white shadow-md shadow-brand/25;
   background-image: linear-gradient(135deg, var(--color-brand), var(--color-brand2));
   &:hover:not(:disabled) {
-    filter: brightness(1.1);
+    filter: brightness(1.08);
   }
 }
 @utility btn-ghost {
-  @apply btn border border-line bg-surface2 text-ink hover:border-brand/50;
+  @apply btn border border-line bg-white text-ink hover:border-brand/50 hover:bg-surface2;
 }
 @utility chip {
-  @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface2 px-3 py-1 text-xs font-medium text-ink/90;
+  @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface2 px-3 py-1 text-xs font-medium text-ink/85;
 }
 @utility input {
-  @apply w-full rounded-xl border border-line bg-surface2 px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted focus:border-brand;
+  @apply w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/70 focus:border-brand focus:ring-2 focus:ring-brand/15;
 }
 @utility label {
-  @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted;
+  @apply mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted;
 }
 
 .grad-text {
-  background-image: linear-gradient(135deg, #b79bff, #ff7ab6);
+  background-image: linear-gradient(135deg, #5b21b6, #a855f7);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -122,7 +121,7 @@ body {
   animation: fadeUp 0.35s ease both;
 }
 .skeleton {
-  background: linear-gradient(90deg, #14141f 0%, #1d1d2d 50%, #14141f 100%);
+  background: linear-gradient(90deg, #f1edfa 0%, #e6dff5 50%, #f1edfa 100%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
   border-radius: 12px;
@@ -141,18 +140,11 @@ body {
 }
 
 .leaflet-container {
-  background: #0b0b12 !important;
+  background: #f1edfa !important;
   font-family: var(--font-sans);
 }
-.leaflet-control-attribution {
-  background: rgba(7, 7, 12, 0.7) !important;
-  color: #7a7a92 !important;
-}
-.leaflet-control-attribution a {
-  color: #9a9ab5 !important;
-}
 .leaflet-tooltip {
-  background: #161622;
-  border: 1px solid #242436;
-  color: #f3f3f9;
+  background: #fff;
+  border: 1px solid #e6e0f3;
+  color: #1a1030;
 }

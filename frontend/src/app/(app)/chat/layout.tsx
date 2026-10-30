@@ -72,7 +72,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
                     <span className={`truncate text-[13px] ${c.unread ? "text-ink" : "text-muted"}`}>
                       {c.last ? `${c.last.mine ? (c.last.read ? "✓✓ " : "✓ ") : ""}${c.last.body}` : "Say hi 👋"}
                     </span>
-                    {c.unread > 0 && <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-good px-1.5 text-[11px] font-bold text-black">{c.unread}</span>}
+                    {c.unread > 0 && <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-good px-1.5 text-[11px] font-bold text-white">{c.unread}</span>}
                   </div>
                   <div className="mt-0.5 text-[11px] text-muted">{c.other.score}% match · {c.other.area}</div>
                 </div>

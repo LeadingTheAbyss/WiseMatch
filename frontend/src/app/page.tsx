@@ -61,7 +61,7 @@ export default function Landing() {
 
       <section className="grid items-center gap-10 py-10 lg:grid-cols-[1.1fr_1fr] lg:py-16">
         <div className="anim-in">
-          <span className="chip mb-5 border-brand/40 bg-brand/10 text-violet-200">
+          <span className="chip mb-5 border-brand/40 bg-brand/10 text-brand">
             <MapPin size={13} /> Bangalore · {stats ? `${stats.total}+ people` : "650+ people"} already here
           </span>
           <h1 className="font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
@@ -81,7 +81,7 @@ export default function Landing() {
                 {busy ? <Spinner /> : <>Find my people <ArrowRight size={16} /></>}
               </button>
             </div>
-            {err && <p className="mt-2 text-sm text-rose-400">{err}</p>}
+            {err && <p className="mt-2 text-sm text-rose-600">{err}</p>}
             <p className="mt-2 text-xs text-muted">No sign-up needed. One tap guest access, fully pre-filled demo city.</p>
           </div>
 
@@ -128,7 +128,7 @@ export default function Landing() {
             </div>
             <div className="mt-4 flex items-center gap-3">
               <div className="h-2 flex-1 overflow-hidden rounded-full bg-line">
-                <div className="h-full w-[28%] rounded-full" style={{ backgroundImage: "linear-gradient(90deg,#8b5cf6,#ec4899)" }} />
+                <div className="h-full w-[28%] rounded-full" style={{ backgroundImage: "linear-gradient(90deg,#8b5cf6,#a78bfa)" }} />
               </div>
               <span className="text-xs font-semibold">650 → 174</span>
             </div>
@@ -150,7 +150,7 @@ export default function Landing() {
         <div className="grid gap-4 md:grid-cols-3">
           {STEPS.map((s, i) => (
             <div key={s.n} className="card anim-in p-5" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className="mb-3 grid h-8 w-8 place-items-center rounded-lg bg-brand/15 font-display font-bold text-violet-200">{s.n}</div>
+              <div className="mb-3 grid h-8 w-8 place-items-center rounded-lg bg-brand/15 font-display font-bold text-brand">{s.n}</div>
               <div className="font-display text-lg font-semibold">{s.title}</div>
               <p className="mt-1 text-sm text-muted">{s.body}</p>
               <div className="mt-4 flex items-baseline gap-2">

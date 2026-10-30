@@ -5,15 +5,8 @@ import { avatarUrl, initials, scoreColor } from "@/lib/format";
 
 export function Logo({ size = 28 }: { size?: number }) {
   return (
-    <span className="inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-      <span
-        className="grid place-items-center rounded-xl text-white"
-        style={{ width: size, height: size, backgroundImage: "linear-gradient(135deg,#8b5cf6,#ec4899)" }}
-      >
-        <svg width={size * 0.58} height={size * 0.58} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1Z" />
-        </svg>
-      </span>
+    <span className="inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight text-ink">
+      <span style={{ fontSize: size, lineHeight: 1 }} aria-hidden>🏠</span>
       WiseMatch
     </span>
   );
@@ -46,7 +39,7 @@ export function ScoreRing({ score, size = 56, stroke = 5, label = true }: { scor
   return (
     <span className="relative inline-grid shrink-0 place-items-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#242436" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e6e0f3" strokeWidth={stroke} />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -86,11 +79,11 @@ export function Skeleton({ className = "" }: { className?: string }) {
 export function SourceBadge({ source }: { source?: string }) {
   if (!source) return null;
   const map: Record<string, string> = {
-    qloo: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-    mock: "bg-amber-500/10 text-amber-300 border-amber-500/25",
-    groq: "bg-sky-500/15 text-sky-300 border-sky-500/30",
-    agent: "bg-violet-500/15 text-violet-300 border-violet-500/30",
-    engine: "bg-zinc-500/15 text-zinc-300 border-zinc-500/30",
+    qloo: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+    mock: "bg-amber-500/10 text-amber-700 border-amber-500/25",
+    groq: "bg-sky-500/15 text-sky-700 border-sky-500/30",
+    agent: "bg-violet-500/15 text-brand border-violet-500/30",
+    engine: "bg-zinc-500/15 text-zinc-600 border-zinc-500/30",
   };
   const label: Record<string, string> = { qloo: "Qloo live", mock: "Taste graph", groq: "Groq", agent: "Agent", engine: "Engine" };
   return <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${map[source] ?? map.engine}`}>{label[source] ?? source}</span>;

@@ -8,11 +8,11 @@ import { Avatar, ScoreRing } from "./ui";
 
 export function IntentBadge({ m }: { m: Pick<MatchCardData, "intent" | "listing" | "budget_min" | "budget_max"> }) {
   return m.intent === "has_room" ? (
-    <span className="inline-flex items-center gap-1 rounded-lg bg-pink-500/15 px-2 py-1 text-[11px] font-semibold text-pink-200">
+    <span className="inline-flex items-center gap-1 rounded-lg bg-deep px-2 py-1 text-[11px] font-semibold text-white">
       <Home size={12} /> Has a room{m.listing ? ` · ${inr(m.listing.rent)}/mo` : ""}
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 rounded-lg bg-violet-500/15 px-2 py-1 text-[11px] font-semibold text-violet-200">
+    <span className="inline-flex items-center gap-1 rounded-lg bg-brand/10 px-2 py-1 text-[11px] font-semibold text-brand">
       <Search size={12} /> Looking · {range(m.budget_min, m.budget_max)}
     </span>
   );
@@ -34,7 +34,7 @@ export function MatchCard({ m, featured = false, rank }: { m: MatchCardData; fea
           </div>
           <div className="truncate text-xs text-muted">{m.occupation}</div>
           <div className="mt-1 flex items-center gap-1 text-xs text-muted">
-            <MapPin size={12} /> {m.area} · {m.distance_km} km
+            <MapPin size={12} /> {m.area}{m.distance_km != null ? ` · ${m.distance_km} km` : ""}
           </div>
         </div>
         <div className="flex flex-col items-center gap-0.5">
@@ -56,7 +56,7 @@ export function MatchCard({ m, featured = false, rank }: { m: MatchCardData; fea
         {m.tags.slice(0, 4).map((t) => {
           const shared = m.shared_tags.some((s) => s.key === t.key);
           return (
-            <span key={t.key} className={`chip !py-0.5 text-[11px] ${shared ? "border-brand/50 bg-brand/15 text-violet-100" : ""}`}>
+            <span key={t.key} className={`chip !py-0.5 text-[11px] ${shared ? "border-brand/50 bg-brand/15 text-brand" : ""}`}>
               {t.emoji} {t.label}
             </span>
           );

@@ -25,7 +25,7 @@ function Section({ title, hint, children, id }: { title: string; hint?: string; 
 
 function Pill({ on, onClick, children, danger }: { on: boolean; onClick: () => void; children: React.ReactNode; danger?: boolean }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={on} className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${on ? (danger ? "border-amber-400 bg-amber-500/15 text-amber-100" : "border-brand bg-brand/20 text-white") : "border-line bg-surface2 text-ink/80 hover:border-brand/50"}`}>
+    <button type="button" onClick={onClick} aria-pressed={on} className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${on ? (danger ? "border-amber-400 bg-amber-500/15 text-amber-100" : "border-brand bg-brand text-white") : "border-line bg-surface2 text-ink/80 hover:border-brand/50"}`}>
       {children}
     </button>
   );
@@ -170,7 +170,7 @@ export default function MePage() {
           <div>
             <label className="label">Budget · {inrFull(Number(basics.budget_min ?? 0))} to {inrFull(Number(basics.budget_max ?? 0))}</label>
             <input type="range" min={5000} max={50000} step={500} value={Number(basics.budget_min ?? 10000)} onChange={(e) => setBasics({ ...basics, budget_min: Math.min(Number(e.target.value), Number(basics.budget_max) - 1000) })} className="w-full accent-violet-500" />
-            <input type="range" min={5000} max={50000} step={500} value={Number(basics.budget_max ?? 20000)} onChange={(e) => setBasics({ ...basics, budget_max: Math.max(Number(e.target.value), Number(basics.budget_min) + 1000) })} className="w-full accent-pink-500" />
+            <input type="range" min={5000} max={50000} step={500} value={Number(basics.budget_max ?? 20000)} onChange={(e) => setBasics({ ...basics, budget_max: Math.max(Number(e.target.value), Number(basics.budget_min) + 1000) })} className="w-full accent-purple-500" />
           </div>
           <div>
             <label className="label">I&apos;m</label>
@@ -246,7 +246,7 @@ export default function MePage() {
         <div className="mt-3 flex flex-wrap gap-2">
           {me.custom_prefs.length === 0 && <span className="text-xs text-muted">Nothing added yet.</span>}
           {me.custom_prefs.map((p, i) => (
-            <span key={i} className={`chip ${p.kind === "avoid" ? "border-amber-500/40 text-amber-200" : "border-good/40 text-emerald-200"}`}>
+            <span key={i} className={`chip ${p.kind === "avoid" ? "border-amber-500/40 text-amber-700" : "border-good/40 text-emerald-700"}`}>
               {p.kind === "avoid" ? "🚫" : "👍"} {p.text}
               <button onClick={() => patch({ custom_prefs: me.custom_prefs.filter((_, j) => j !== i) }, "Removed")} aria-label="Remove"><X size={12} /></button>
             </span>
@@ -267,7 +267,7 @@ export default function MePage() {
             {fres.results.map((r) => (
               <button key={r.id} onClick={() => addFav(r)} className="flex w-full items-center justify-between gap-3 border-b border-line/60 px-3 py-2.5 text-left text-sm last:border-0 hover:bg-surface2">
                 <span><b>{r.name}</b> <span className="text-xs text-muted">· {r.type.replace("_", " ")}</span></span>
-                <Plus size={15} className="text-violet-300" />
+                <Plus size={15} className="text-brand" />
               </button>
             ))}
           </div>

@@ -155,7 +155,7 @@ export default function Discover() {
         {likes && likes.liked_you.length > 0 && (
           <section>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Heart size={16} className="text-pink-400" /> Liked you <span className="chip !py-0">{likes.liked_you.length}</span></h2>
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold"><Heart size={16} className="text-purple-500" /> Liked you <span className="chip !py-0">{likes.liked_you.length}</span></h2>
             </div>
             <div className="no-scrollbar -mx-3 flex gap-3 overflow-x-auto px-3 pb-1 sm:mx-0 sm:px-0">
               {likes.liked_you.map((p) => (
@@ -193,21 +193,21 @@ export default function Discover() {
 
           <div className="no-scrollbar -mx-3 flex items-center gap-2 overflow-x-auto px-3 sm:mx-0 sm:px-0">
             {[["", "Everyone"], ["has_room", "🏠 Has a room"], ["seeking", "🔍 Looking"]].map(([v, l]) => (
-              <button key={v} onClick={() => setIntent(v)} className={`chip shrink-0 transition ${intent === v ? "border-brand bg-brand/20 text-white" : "hover:border-brand/50"}`}>{l}</button>
+              <button key={v} onClick={() => setIntent(v)} className={`chip shrink-0 transition ${intent === v ? "border-brand bg-brand text-white" : "hover:border-brand/50"}`}>{l}</button>
             ))}
-            <button onClick={() => setVerified(!verified)} className={`chip shrink-0 transition ${verified ? "border-sky-400/60 bg-sky-500/15 text-sky-200" : "hover:border-brand/50"}`}>✓ Verified</button>
+            <button onClick={() => setVerified(!verified)} className={`chip shrink-0 transition ${verified ? "border-sky-400/60 bg-sky-500/15 text-sky-700" : "hover:border-brand/50"}`}>✓ Verified</button>
             {[0, 70, 80, 90].map((s) => (
-              <button key={s} onClick={() => setMinScore(s)} className={`chip shrink-0 transition ${minScore === s ? "border-brand bg-brand/20 text-white" : "hover:border-brand/50"}`}>{s === 0 ? "Any score" : `${s}%+`}</button>
+              <button key={s} onClick={() => setMinScore(s)} className={`chip shrink-0 transition ${minScore === s ? "border-brand bg-brand text-white" : "hover:border-brand/50"}`}>{s === 0 ? "Any score" : `${s}%+`}</button>
             ))}
-            <button onClick={() => setShowAreas(!showAreas)} className={`chip shrink-0 transition ${areas.length ? "border-brand bg-brand/20 text-white" : "hover:border-brand/50"}`}>
+            <button onClick={() => setShowAreas(!showAreas)} className={`chip shrink-0 transition ${areas.length ? "border-brand bg-brand text-white" : "hover:border-brand/50"}`}>
               <Filter size={12} /> Areas{areas.length ? ` (${areas.length})` : ""}
             </button>
-            {filtered && <button onClick={clear} className="chip shrink-0 text-rose-300"><X size={12} /> Clear</button>}
+            {filtered && <button onClick={clear} className="chip shrink-0 text-rose-600"><X size={12} /> Clear</button>}
           </div>
           {showAreas && stats && (
             <div className="card anim-in flex flex-wrap gap-1.5 p-3">
               {stats.areas.map((a) => (
-                <button key={a.name} onClick={() => toggleArea(a.name)} className={`chip transition ${areas.includes(a.name) ? "border-brand bg-brand/20 text-white" : "hover:border-brand/50"}`}>
+                <button key={a.name} onClick={() => toggleArea(a.name)} className={`chip transition ${areas.includes(a.name) ? "border-brand bg-brand text-white" : "hover:border-brand/50"}`}>
                   {a.name} <span className="text-muted">{a.count}</span>
                 </button>
               ))}

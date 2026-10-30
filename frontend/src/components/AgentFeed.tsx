@@ -16,7 +16,7 @@ export function AgentFeed({ events, pending, max = 8 }: { events: TraceEvent[]; 
   return (
     <div className="space-y-2">
       {pending && (
-        <div className="flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-violet-200">
+        <div className="flex items-center gap-2 rounded-xl border border-brand/40 bg-brand/10 px-3 py-2 text-xs text-brand">
           <span className="dot-pulse h-2 w-2 rounded-full bg-brand" /> Agent is thinking…
         </div>
       )}
@@ -26,7 +26,7 @@ export function AgentFeed({ events, pending, max = 8 }: { events: TraceEvent[]; 
         return (
           <div key={e.id} className={`anim-in rounded-xl border px-3 py-2 ${e.ok ? "border-line bg-surface" : "border-rose-500/30 bg-rose-500/5"}`}>
             <div className="flex items-start gap-2">
-              <Icon size={14} className="mt-0.5 shrink-0 text-violet-300" />
+              <Icon size={14} className="mt-0.5 shrink-0 text-brand" />
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="text-xs font-semibold leading-tight">{e.title}</span>

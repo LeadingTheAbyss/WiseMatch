@@ -58,7 +58,7 @@ export interface MatchCardData {
   budget_max: number;
   bio: string;
   score: number;
-  distance_km: number;
+  distance_km: number | null;
   reasons: Reason[];
   shared_tags: TagChip[];
   tags: TagChip[];

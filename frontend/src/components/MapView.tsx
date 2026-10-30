@@ -23,7 +23,7 @@ export default function MapView({ stats, you, selected, onPickArea }: Props) {
       const L = (await import("leaflet")).default;
       if (cancelled || !el.current) return;
       map = L.map(el.current, { zoomControl: true, attributionControl: true, scrollWheelZoom: false }).setView([12.9716, 77.6146], 11);
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
         attribution: "© OpenStreetMap · © CARTO",
         maxZoom: 18,
       }).addTo(map);
@@ -32,7 +32,7 @@ export default function MapView({ stats, you, selected, onPickArea }: Props) {
       for (const p of stats.points) {
         L.circleMarker([p.lat, p.lng], {
           renderer: canvas, radius: 2.6, weight: 0, fillOpacity: 0.55,
-          fillColor: p.intent === "has_room" ? "#ec4899" : "#8b5cf6",
+          fillColor: p.intent === "has_room" ? "#3b0b6f" : "#a78bfa",
         }).addTo(map);
       }
       for (const a of stats.areas) {
@@ -60,8 +60,8 @@ export default function MapView({ stats, you, selected, onPickArea }: Props) {
     <div className="card overflow-hidden">
       <div ref={el} className="h-[420px] w-full sm:h-[520px]" />
       <div className="flex flex-wrap items-center gap-4 border-t border-line px-4 py-2.5 text-xs text-muted">
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-500" /> Looking for a room</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-pink-500" /> Has a room</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-purple-400" /> Looking for a room</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-deep" /> Has a room</span>
         <span className="ml-auto">Tap a neighbourhood to filter</span>
       </div>
     </div>

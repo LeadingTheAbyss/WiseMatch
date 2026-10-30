@@ -120,16 +120,16 @@ export default function ThreadPage() {
         )}
       </header>
 
-      <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-3 py-4 sm:px-5" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0)", backgroundSize: "22px 22px" }}>
+      <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto px-3 py-4 sm:px-5" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(109,40,217,0.07) 1px, transparent 0)", backgroundSize: "22px 22px" }}>
         {msgs.map((m, i) => {
           const prev = msgs[i - 1];
           const newGroup = !prev || prev.mine !== m.mine;
           return (
             <div key={m.id} className={`flex ${m.mine ? "justify-end" : "justify-start"} ${newGroup ? "pt-2" : ""}`}>
-              <div className={`anim-in max-w-[82%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed sm:max-w-[70%] ${m.mine ? "rounded-br-md text-white" : "rounded-bl-md border border-line bg-surface2"}`} style={m.mine ? { backgroundImage: "linear-gradient(135deg,#7c4dff,#d946ef)" } : undefined}>
+              <div className={`anim-in max-w-[82%] rounded-2xl px-3.5 py-2 text-sm leading-relaxed sm:max-w-[70%] ${m.mine ? "rounded-br-md text-white" : "rounded-bl-md border border-line bg-surface2"}`} style={m.mine ? { backgroundImage: "linear-gradient(135deg,#6d28d9,#8b5cf6)" } : undefined}>
                 <div className="whitespace-pre-wrap break-words">{m.body}</div>
                 <div className={`mt-0.5 flex items-center justify-end gap-1 text-[10px] ${m.mine ? "text-white/70" : "text-muted"}`}>
-                  {clock(m.at)} {m.mine && <span className={m.read ? "text-sky-200" : ""}>{m.read ? "✓✓" : "✓"}</span>}
+                  {clock(m.at)} {m.mine && <span className={m.read ? "text-sky-700" : ""}>{m.read ? "✓✓" : "✓"}</span>}
                 </div>
               </div>
             </div>
