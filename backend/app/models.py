@@ -48,7 +48,7 @@ class Listing(Base):
     area: Mapped[str] = mapped_column(String(60), index=True)
     rent: Mapped[int] = mapped_column(Integer)  # monthly share
     deposit: Mapped[int] = mapped_column(Integer, default=0)
-    room_type: Mapped[str] = mapped_column(String(30), default="Private room")
+    room_type: Mapped[str] = mapped_column(String(60), default="Private room")
     flat_type: Mapped[str] = mapped_column(String(20), default="2 BHK")
     furnishing: Mapped[str] = mapped_column(String(30), default="Semi-furnished")
     amenities: Mapped[list] = mapped_column(JSON, default=list)
