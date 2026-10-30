@@ -10,7 +10,7 @@ import json
 import random
 
 from . import llm, trace
-from .catalog import TAGS, TRAIT_QUESTIONS
+from .catalog import TAGS, TRAIT_QUESTIONS, avatar_for
 from .engine import MAX_QUESTIONS, STOP_POOL, card, compat, heads_up, option_values, pool_for, rank, rank_questions, reasons_for
 from .qloo import qloo
 
@@ -178,7 +178,7 @@ async def next_step(me: dict) -> dict:
     answered = answered_ids(me)
     trace.log("pool", f"Candidate pool: {len(pool)} of {initial} people", f"{len(answered)} answers so far · {initial - len(pool)} ruled out", source="engine")
     ranked = rank(me, pool)
-    top = [{"id": c["id"], "name": c["name"], "score": cm["score"], "area": c["area"]} for c, cm in ranked[:4]]
+    top = [{"id": c["id"], "name": c["name"], "score": cm["score"], "area": c["area"], "avatar": avatar_for(c["id"], c["gender"])} for c, cm in ranked[:4]]
 
     question = None
     done = len(answered) >= MAX_QUESTIONS or len(pool) <= STOP_POOL

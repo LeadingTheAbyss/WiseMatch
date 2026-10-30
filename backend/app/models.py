@@ -75,6 +75,8 @@ class Conversation(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_a: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     user_b: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    status: Mapped[str] = mapped_column(String(12), default="accepted")  # accepted | request
+    initiator_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

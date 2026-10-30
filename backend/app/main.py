@@ -8,11 +8,17 @@ from .api import router
 from .config import settings
 from .db import Base, SessionLocal, engine
 from .seed import seed_if_empty
+from sqlalchemy import inspect, text
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(engine)
+    insp = inspect(engine)
+    if insp.has_table("conversations") and "status" not in {c["name"] for c in insp.get_columns("conversations")}:
+        with engine.begin() as conn:  # lightweight migration for databases created before message requests
+            conn.execute(text("ALTER TABLE conversations ADD COLUMN status VARCHAR(12) NOT NULL DEFAULT 'accepted'"))
+            conn.execute(text("ALTER TABLE conversations ADD COLUMN initiator_id INTEGER"))
     seed_if_empty(settings.seed_users)
     with SessionLocal() as db:
         store.load_all(db)

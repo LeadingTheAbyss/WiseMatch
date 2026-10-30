@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from . import agent, llm, store, trace
 from .auth import current_user, make_token
-from .catalog import AREAS, ENTITIES, LANGUAGES, RELIGIONS, TAGS, TRAIT_QUESTIONS
+from .catalog import AREAS, ENTITIES, LANGUAGES, RELIGIONS, TAGS, TRAIT_QUESTIONS, avatar_for
 from .db import IS_SQLITE, SessionLocal, get_db
 from .engine import card, compat, heads_up, pool_for, rank, reasons_for
 from .inbox import seed_inbox
@@ -77,14 +77,18 @@ def counts_for(db: Session, uid: int) -> dict:
         select(func.count()).select_from(Message).join(Conversation, Conversation.id == Message.conversation_id)
         .where(or_(Conversation.user_a == uid, Conversation.user_b == uid), Message.sender_id != uid, Message.read.is_(False))
     ) or 0
-    liked_you = db.scalar(select(func.count()).select_from(Interest).where(Interest.to_id == uid)) or 0
-    return {"unread": unread, "liked_you": liked_you}
+    requests = db.scalar(
+        select(func.count()).select_from(Conversation)
+        .where(or_(Conversation.user_a == uid, Conversation.user_b == uid), Conversation.status == "request", Conversation.initiator_id != uid)
+    ) or 0
+    return {"unread": unread, "requests": requests}
 
 
 def me_view(me: dict, db: Session) -> dict:
     listing = LISTINGS.get(me["id"])
     return {
         **{k: me[k] for k in ("id", "name", "age", "gender", "occupation", "area", "bio", "intent", "budget_min", "budget_max", "move_in", "gender_pref", "religion", "languages", "traits", "prefs", "custom_prefs", "taste", "onboarded", "verified")},
+        "avatar": avatar_for(me["id"], me["gender"]),
         "tags": tag_chips(me),
         "trait_chips": trait_chips(me),
         "answered": len(agent.answered_ids(me)),
@@ -95,8 +99,6 @@ def me_view(me: dict, db: Session) -> dict:
 
 def profile_view(me: dict, c: dict, db: Session) -> dict:
     cm = compat(me, c)
-    liked = db.scalar(select(Interest.id).where(Interest.from_id == me["id"], Interest.to_id == c["id"])) is not None
-    liked_me = db.scalar(select(Interest.id).where(Interest.from_id == c["id"], Interest.to_id == me["id"])) is not None
     conv = _find_conv(db, me["id"], c["id"])
     return {
         **card(me, c, cm),
@@ -105,7 +107,7 @@ def profile_view(me: dict, c: dict, db: Session) -> dict:
         "breakdown": cm["breakdown"], "all_reasons": reasons_for(me, c, cm, 6), "heads_up": heads_up(me, c),
         "shared_entities": cm["shared_entities"],
         "listing": LISTINGS.get(c["id"]),
-        "liked": liked, "liked_me": liked_me, "mutual": liked and liked_me, "conversation_id": conv.id if conv else None,
+        "conversation": {"id": conv.id, "status": conv.status, "incoming": conv.status == "request" and conv.initiator_id != me["id"]} if conv else None,
         "is_demo": c["is_demo"],
     }
 
@@ -147,7 +149,7 @@ def stats():
         "rooms": sum(1 for u in USERS.values() if u["intent"] == "has_room"),
         "areas": areas,
         "top_tags": [{"key": k, "label": TAGS[k][0], "emoji": TAGS[k][1], "count": n} for k, n in tag_counts.most_common(10) if k in TAGS],
-        "points": [{"id": u["id"], "lat": u["lat"], "lng": u["lng"], "name": u["name"], "intent": u["intent"], "area": u["area"]} for u in located],
+        "points": [{"avatar": avatar_for(u["id"], u["gender"]), "id": u["id"], "lat": u["lat"], "lng": u["lng"], "name": u["name"], "intent": u["intent"], "area": u["area"]} for u in located],
     }
 
 
@@ -401,69 +403,29 @@ async def explain_user(uid: int, me: dict = Depends(current_user)):
     return {**explanation, "spots": spots["spots"], "spots_source": spots["source"]}
 
 
-# ----------------------------------------------------------------------------- interest + chat
+
+
+# ----------------------------------------------------------------------------- chat + message requests
 def _find_conv(db: Session, a: int, b: int) -> Conversation | None:
     return db.scalar(select(Conversation).where(or_(and_(Conversation.user_a == a, Conversation.user_b == b), and_(Conversation.user_a == b, Conversation.user_b == a))))
 
 
-def _like_back(me: dict, c: dict, score: int) -> bool:
-    if not c["is_demo"]:
-        return False
+def _accepts(me: dict, c: dict, score: int) -> bool:
+    """Demo profiles accept most message requests, a bit more eagerly for strong matches."""
     h = int(hashlib.md5(f"{me['id']}:{c['id']}".encode()).hexdigest(), 16) % 100
-    return h < (92 if score >= 80 else 60 if score >= 65 else 28)
-
-
-@router.post("/users/{uid}/like")
-def like(uid: int, me: dict = Depends(current_user), db: Session = Depends(get_db)):
-    c = USERS.get(uid)
-    if not c or uid == me["id"]:
-        raise HTTPException(404, "No such user")
-    if not db.scalar(select(Interest.id).where(Interest.from_id == me["id"], Interest.to_id == uid)):
-        db.add(Interest(from_id=me["id"], to_id=uid))
-        db.commit()
-    cm = compat(me, c)
-    if not db.scalar(select(Interest.id).where(Interest.from_id == uid, Interest.to_id == me["id"])) and _like_back(me, c, cm["score"]):
-        db.add(Interest(from_id=uid, to_id=me["id"]))
-        db.commit()
-    mutual = db.scalar(select(Interest.id).where(Interest.from_id == uid, Interest.to_id == me["id"])) is not None
-    conv_id = None
-    if mutual:
-        conv = _find_conv(db, me["id"], uid)
-        if not conv:
-            conv = Conversation(user_a=me["id"], user_b=uid)
-            db.add(conv)
-            db.flush()
-            tag = TAGS[cm["shared_tags"][0]][0].lower() if cm["shared_tags"] else None
-            hello = f"Hey {me['name'].split()[0]}! Looks like we both liked each other 🙂" + (f" Saw you're into {tag} too." if tag else "")
-            db.add(Message(conversation_id=conv.id, sender_id=uid, body=hello))
-            db.commit()
-        conv_id = conv.id
-    return {"liked": True, "mutual": mutual, "conversation_id": conv_id}
-
-
-@router.delete("/users/{uid}/like")
-def unlike(uid: int, me: dict = Depends(current_user), db: Session = Depends(get_db)):
-    db.query(Interest).filter(Interest.from_id == me["id"], Interest.to_id == uid).delete()
-    db.commit()
-    return {"liked": False}
-
-
-@router.get("/likes")
-def likes(me: dict = Depends(current_user), db: Session = Depends(get_db)):
-    got = [r for r in db.scalars(select(Interest.from_id).where(Interest.to_id == me["id"]))]
-    sent = {r for r in db.scalars(select(Interest.to_id).where(Interest.from_id == me["id"]))}
-    items = []
-    for uid in got:
-        c = USERS.get(uid)
-        if c:
-            cm = compat(me, c)
-            items.append({**card(me, c, cm), "matched": uid in sent})
-    items.sort(key=lambda x: -x["score"])
-    return {"liked_you": [i for i in items if not i["matched"]], "matches": [i for i in items if i["matched"]]}
+    return h < (95 if score >= 80 else 85 if score >= 65 else 60)
 
 
 def _msg(m: Message, me_id: int) -> dict:
     return {"id": m.id, "body": m.body, "mine": m.sender_id == me_id, "at": m.created_at.isoformat() + "Z", "read": m.read}
+
+
+def _other(c: dict, score: int) -> dict:
+    return {"id": c["id"], "name": c["name"], "area": c["area"], "verified": c["verified"], "last_active": c["last_active"], "score": score, "occupation": c["occupation"], "avatar": avatar_for(c["id"], c["gender"]), "is_demo": c["is_demo"]}
+
+
+def _flags(cv: Conversation, me_id: int) -> dict:
+    return {"status": cv.status, "incoming": cv.status == "request" and cv.initiator_id != me_id, "outgoing": cv.status == "request" and cv.initiator_id == me_id}
 
 
 @router.get("/conversations")
@@ -477,11 +439,9 @@ def conversations(me: dict = Depends(current_user), db: Session = Depends(get_db
             continue
         last = db.scalar(select(Message).where(Message.conversation_id == cv.id).order_by(Message.id.desc()).limit(1))
         unread = db.scalar(select(func.count()).select_from(Message).where(Message.conversation_id == cv.id, Message.sender_id != me["id"], Message.read.is_(False))) or 0
-        cm = compat(me, c)
         out.append({
-            "id": cv.id, "other": {"id": c["id"], "name": c["name"], "area": c["area"], "verified": c["verified"], "last_active": c["last_active"], "score": cm["score"], "occupation": c["occupation"]},
-            "last": _msg(last, me["id"]) if last else None, "unread": unread,
-            "sort": (last.created_at if last else cv.created_at).isoformat(),
+            "id": cv.id, "other": _other(c, compat(me, c)["score"]), "last": _msg(last, me["id"]) if last else None, "unread": unread,
+            **_flags(cv, me["id"]), "sort": (last.created_at if last else cv.created_at).isoformat(),
         })
     out.sort(key=lambda x: x["sort"], reverse=True)
     return {"items": out}
@@ -506,11 +466,7 @@ def messages(cid: int, after: int = 0, me: dict = Depends(current_user), db: Ses
             changed = True
     if changed:
         db.commit()
-    cm = compat(me, other)
-    return {
-        "other": {"id": other["id"], "name": other["name"], "area": other["area"], "verified": other["verified"], "last_active": other["last_active"], "is_demo": other["is_demo"], "score": cm["score"], "occupation": other["occupation"]},
-        "messages": [_msg(m, me["id"]) for m in rows],
-    }
+    return {"other": _other(other, compat(me, other)["score"]), **_flags(cv, me["id"]), "messages": [_msg(m, me["id"]) for m in rows]}
 
 
 class MessageIn(BaseModel):
@@ -530,25 +486,73 @@ async def _demo_reply(cid: int, other_id: int, me_id: int, me_name: str) -> None
         db.commit()
 
 
+async def _demo_answer_request(cid: int, other_id: int, me_id: int, me_name: str) -> None:
+    await asyncio.sleep(random.uniform(2.5, 4.5))
+    me, c = USERS.get(me_id), USERS.get(other_id)
+    if not me or not c or not _accepts(me, c, compat(me, c)["score"]):
+        return
+    with SessionLocal() as db:
+        cv = db.get(Conversation, cid)
+        if not cv or cv.status != "request":
+            return
+        cv.status = "accepted"
+        db.commit()
+    await _demo_reply(cid, other_id, me_id, me_name)
+
+
 @router.post("/conversations/{cid}/messages")
 def send(cid: int, body: MessageIn, tasks: BackgroundTasks, me: dict = Depends(current_user), db: Session = Depends(get_db)):
     cv = _own_conv(db, cid, me["id"])
     other_id = cv.user_b if cv.user_a == me["id"] else cv.user_a
+    if cv.status == "request":
+        if cv.initiator_id == me["id"]:
+            sent = db.scalar(select(func.count()).select_from(Message).where(Message.conversation_id == cid, Message.sender_id == me["id"])) or 0
+            if sent >= 1:
+                raise HTTPException(403, "You can send more once they accept your request")
+        else:
+            cv.status = "accepted"  # replying to a request accepts it
     m = Message(conversation_id=cid, sender_id=me["id"], body=body.body.strip())
     db.add(m)
     db.commit()
-    if USERS[other_id]["is_demo"]:
+    if USERS[other_id]["is_demo"] and cv.status == "accepted":
         tasks.add_task(_demo_reply, cid, other_id, me["id"], me["name"])
     return _msg(m, me["id"])
 
 
-@router.post("/users/{uid}/chat")
-def open_chat(uid: int, me: dict = Depends(current_user), db: Session = Depends(get_db)):
-    """Open (or create) a conversation. Needs mutual interest, like the product spec."""
+@router.post("/users/{uid}/request")
+def message_request(uid: int, body: MessageIn, tasks: BackgroundTasks, me: dict = Depends(current_user), db: Session = Depends(get_db)):
+    """Send a message request straight to someone, no mutual interest needed."""
     c = USERS.get(uid)
-    if not c:
+    if not c or uid == me["id"]:
         raise HTTPException(404, "No such user")
-    conv = _find_conv(db, me["id"], uid)
-    if conv:
-        return {"conversation_id": conv.id}
-    raise HTTPException(403, "Both of you need to like each other first")
+    existing = _find_conv(db, me["id"], uid)
+    if existing:
+        return {"conversation_id": existing.id, "status": existing.status, "existing": True}
+    cv = Conversation(user_a=me["id"], user_b=uid, status="request", initiator_id=me["id"])
+    db.add(cv)
+    db.flush()
+    db.add(Message(conversation_id=cv.id, sender_id=me["id"], body=body.body.strip()))
+    db.commit()
+    if c["is_demo"]:
+        tasks.add_task(_demo_answer_request, cv.id, uid, me["id"], me["name"])
+    return {"conversation_id": cv.id, "status": "request", "existing": False}
+
+
+@router.post("/conversations/{cid}/accept")
+def accept_request(cid: int, me: dict = Depends(current_user), db: Session = Depends(get_db)):
+    cv = _own_conv(db, cid, me["id"])
+    if cv.status == "request" and cv.initiator_id != me["id"]:
+        cv.status = "accepted"
+        db.commit()
+    return {"status": cv.status}
+
+
+@router.delete("/conversations/{cid}")
+def decline_request(cid: int, me: dict = Depends(current_user), db: Session = Depends(get_db)):
+    cv = _own_conv(db, cid, me["id"])
+    if cv.status != "request" or cv.initiator_id == me["id"]:
+        raise HTTPException(400, "Only incoming requests can be declined")
+    db.query(Message).filter(Message.conversation_id == cid).delete()
+    db.delete(cv)
+    db.commit()
+    return {"deleted": True}

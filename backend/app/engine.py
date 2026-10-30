@@ -6,7 +6,7 @@ Qloo and the LLM on top of it to choose and phrase the next question.
 from collections import Counter
 from math import asin, cos, exp, log2, radians, sin, sqrt
 
-from .catalog import AREAS, HARD_KEYS, SIMILARITY_WEIGHTS, TAGS, TRAIT_QUESTIONS
+from .catalog import AREAS, HARD_KEYS, SIMILARITY_WEIGHTS, TAGS, TRAIT_QUESTIONS, avatar_for
 from .store import LISTINGS, USERS
 
 MAX_QUESTIONS = 12
@@ -293,13 +293,14 @@ def card(me: dict, c: dict, cm: dict | None = None) -> dict:
     cm = cm or compat(me, c)
     listing = LISTINGS.get(c["id"])
     return {
-        "id": c["id"], "name": c["name"], "age": c["age"], "gender": c["gender"], "occupation": c["occupation"],
+        "id": c["id"], "name": c["name"], "age": c["age"], "gender": c["gender"], "occupation": c["occupation"], "avatar": avatar_for(c["id"], c["gender"]),
         "area": c["area"], "intent": c["intent"], "verified": c["verified"], "last_active": c["last_active"],
         "budget_min": c["budget_min"], "budget_max": c["budget_max"], "bio": c["bio"],
         "score": cm["score"], "distance_km": cm["distance_km"],
-        "reasons": reasons_for(me, c, cm, 3),
+        "reasons": reasons_for(me, c, cm, 2),
         "shared_tags": [{"key": t, "label": TAGS[t][0], "emoji": TAGS[t][1]} for t in cm["shared_tags"][:4]],
-        "tags": [{"key": t, "label": TAGS[t][0], "emoji": TAGS[t][1]} for t in c["tags"][:5] if t in TAGS],
+        # only what they like that we know nothing about yet (the user hasn't answered about these)
+        "tags": [{"key": t, "label": TAGS[t][0], "emoji": TAGS[t][1]} for t in [x for x in c["tags"] if x not in me["_tags"] and x not in me["_anti"]][:3] if t in TAGS],
         "listing": {"rent": listing["rent"], "title": listing["title"], "hue": listing["hue"]} if listing else None,
     }
 
