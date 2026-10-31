@@ -24,6 +24,3 @@ next-env.d.ts
 .DS_Store
 .vercel/
 *.log
-
-# rendered videos (large, kept out of git)
-video/outputs/
