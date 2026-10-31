@@ -7,23 +7,15 @@
 
 I have developed WiseMatch, an agent-driven roommate discovery platform engineered for people who are moving to, or within, Bangalore. Instead of handing the user a fifty-field questionnaire, the system dynamically decides the single most useful question to ask next, narrows a pool of 650+ candidate roommates down in a handful of answers, and ranks whoever is left with a transparent compatibility score. Once two people look like a good fit, they can message each other through an Instagram-style request system, so they get to know each other properly before anyone signs a lease.
 
-<p align="center">
-  <img src="image/landing.png" alt="WiseMatch landing page"/>
-</p>
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/eb56a9d0-ab79-41d1-8ef0-b73f84f0c3cb" width="100%" controls muted></video>
+</div>
 
 ## 🚀 Live Deployment
 
 [![Open Application](https://img.shields.io/badge/Open%20Application-111111?style=for-the-badge&logo=vercel&logoColor=white)](https://getwisematch.vercel.app)
 
 > The API runs on a free Render instance, so the very first request after a quiet spell can take around 30 seconds while it wakes up. After that it is quick.
-
-## 🎬 Demo Video
-
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/8900b1c0-2230-4f6f-8f44-3793eb9e9762" width="100%" controls muted></video>
-</div>
-
-> If the player does not load in your browser, [watch the demo video here](https://github.com/user-attachments/assets/8900b1c0-2230-4f6f-8f44-3793eb9e9762).
 
 ## 🖼️ A Quick Look
 
