@@ -11,7 +11,7 @@ import { Avatar, Logo, Spinner, useCountUp } from "@/components/ui";
 const STEPS = [
   { n: 1, title: "Tell us the basics", body: "Area, budget and who you'd like to live with. Takes 20 seconds.", pool: 650 },
   { n: 2, title: "Our agent narrows the field", body: "It asks the one question that splits Bangalore's roommates best, then the next, Akinator-style.", pool: 174 },
-  { n: 3, title: "Meet your best matches", body: "Ranked by taste, habits and budget, with the Qloo taste graph behind every score.", pool: 9 },
+  { n: 3, title: "Meet your best matches", body: "Ranked by taste, habits and budget, with a taste graph behind every score.", pool: 9 },
 ];
 
 export default function Landing() {
@@ -48,9 +48,6 @@ export default function Landing() {
       <header className="flex items-center justify-between py-5">
         <Logo />
         <div className="flex items-center gap-3">
-          <span className="hidden items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs text-muted sm:inline-flex">
-            <Sparkles size={13} className="text-brand" /> Powered by Qloo taste graph
-          </span>
           {!loading && me && (
             <button className="btn-ghost" onClick={() => router.push(me.onboarded ? "/discover" : "/start")}>
               Continue <ArrowRight size={15} />
@@ -196,7 +193,7 @@ export default function Landing() {
       </section>
 
       <footer className="mt-auto border-t border-line py-6 text-center text-xs text-muted">
-        WiseMatch · built for the Qloo LLM Hackathon · MIT licensed
+        WiseMatch · MIT licensed
       </footer>
     </main>
   );

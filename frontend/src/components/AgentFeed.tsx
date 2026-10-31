@@ -6,7 +6,7 @@ import { SourceBadge } from "./ui";
 
 const ICON = {
   pool: Users,
-  qloo: Network,
+  taste: Network,
   llm: Brain,
   decide: Crosshair,
 };
@@ -20,7 +20,7 @@ export function AgentFeed({ events, pending, max = 8 }: { events: TraceEvent[]; 
           <span className="dot-pulse h-2 w-2 rounded-full bg-brand" /> Agent is thinking…
         </div>
       )}
-      {rows.length === 0 && !pending && <p className="px-1 text-xs text-muted">Agent activity will show up here, including every Qloo and LLM call.</p>}
+      {rows.length === 0 && !pending && <p className="px-1 text-xs text-muted">Agent activity will show up here, including every taste-graph and LLM call.</p>}
       {rows.map((e) => {
         const Icon = ICON[e.kind] ?? Crosshair;
         return (

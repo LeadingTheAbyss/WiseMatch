@@ -59,7 +59,7 @@ export default function MePage() {
     if (fq.trim().length < 2) return void setFres(null);
     setSearching(true);
     const t = setTimeout(() => {
-      api<{ source: string; results: Entity[] }>(`/qloo/search?q=${encodeURIComponent(fq.trim())}`)
+      api<{ source: string; results: Entity[] }>(`/taste/search?q=${encodeURIComponent(fq.trim())}`)
         .then(setFres)
         .catch(() => setFres(null))
         .finally(() => setSearching(false));
@@ -269,7 +269,7 @@ export default function MePage() {
         </div>
       </Section>
 
-      <Section title="My taste" hint="Search Qloo's taste graph for artists, films, restaurants and more. Everything here feeds your matches.">
+      <Section title="My taste" hint="Search the taste graph for artists, films, restaurants and more. Everything here feeds your matches.">
         <div className="relative">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
           <input className="input !pl-9" placeholder="Search e.g. Prateek Kuhad, Toit, Dune…" value={fq} onChange={(e) => setFq(e.target.value)} />
@@ -277,7 +277,7 @@ export default function MePage() {
         </div>
         {fres && (
           <div className="card anim-in mt-2 overflow-hidden">
-            <div className="flex items-center justify-between border-b border-line px-3 py-1.5 text-[11px] text-muted"><span>{fres.results.length} results</span><SourceBadge source={fres.source === "live" ? "qloo" : "mock"} /></div>
+            <div className="flex items-center justify-between border-b border-line px-3 py-1.5 text-[11px] text-muted"><span>{fres.results.length} results</span><SourceBadge source={fres.source === "live" ? "live" : "mock"} /></div>
             {fres.results.length === 0 && <div className="px-3 py-4 text-sm text-muted">Nothing found. Try another name.</div>}
             {fres.results.map((r) => (
               <button key={r.id} onClick={() => addFav(r)} className="flex w-full items-center justify-between gap-3 border-b border-line/60 px-3 py-2.5 text-left text-sm last:border-0 hover:bg-surface2">

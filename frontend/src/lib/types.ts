@@ -137,7 +137,7 @@ export interface Question {
 export interface TraceEvent {
   id: number;
   t: number;
-  kind: "pool" | "qloo" | "llm" | "decide";
+  kind: "pool" | "taste" | "llm" | "decide";
   title: string;
   detail: string;
   ms: number | null;

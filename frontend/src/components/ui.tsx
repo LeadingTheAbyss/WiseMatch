@@ -81,13 +81,13 @@ export function Skeleton({ className = "" }: { className?: string }) {
 export function SourceBadge({ source }: { source?: string }) {
   if (!source) return null;
   const map: Record<string, string> = {
-    qloo: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
+    live: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30",
     mock: "bg-amber-500/10 text-amber-700 border-amber-500/25",
     groq: "bg-sky-500/15 text-sky-700 border-sky-500/30",
     agent: "bg-violet-500/15 text-brand border-violet-500/30",
     engine: "bg-zinc-500/15 text-zinc-600 border-zinc-500/30",
   };
-  const label: Record<string, string> = { qloo: "Qloo live", mock: "Taste graph", groq: "Groq", agent: "Agent", engine: "Engine" };
+  const label: Record<string, string> = { live: "Live", mock: "Taste graph", groq: "Groq", agent: "Agent", engine: "Engine" };
   return <span className={`rounded-md border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${map[source] ?? map.engine}`}>{label[source] ?? source}</span>;
 }
 

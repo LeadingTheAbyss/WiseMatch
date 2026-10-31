@@ -8,7 +8,7 @@ const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], weight: [
 
 export const metadata: Metadata = {
   title: "WiseMatch",
-  description: "Taste-first roommate matching for Bangalore, powered by the Qloo taste graph and an AI matching agent.",
+  description: "Taste-first roommate matching for Bangalore, with an AI matching agent.",
 };
 
 export const viewport: Viewport = {

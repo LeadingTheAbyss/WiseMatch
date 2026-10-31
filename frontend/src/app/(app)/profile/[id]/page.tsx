@@ -202,7 +202,7 @@ export default function ProfilePage() {
             </div>
           </Section>
 
-          <Section title="Taste profile" right={<SourceBadge source="qloo" />}>
+          <Section title="Taste profile">
             <div className="flex flex-wrap gap-1.5">
               {p.all_tags.map((t) => {
                 const shared = p.shared_tags.some((s) => s.key === t.key);
@@ -255,7 +255,7 @@ export default function ProfilePage() {
                 ))}
               </div>
             )}
-            <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted"><Sparkles size={11} /> Picked from both of your tastes via the Qloo taste graph</p>
+            <p className="mt-3 flex items-center gap-1.5 text-[11px] text-muted"><Sparkles size={11} /> Picked from both of your tastes via the taste graph</p>
           </Section>
 
           <Section title="Day to day">
