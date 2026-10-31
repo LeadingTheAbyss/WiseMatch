@@ -29,7 +29,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh">
       {/* desktop icon rail */}
       <aside className="sticky top-0 hidden h-dvh w-[88px] shrink-0 flex-col items-center border-r border-line bg-white py-5 lg:flex">
-        <Link href="/discover" className="text-3xl leading-none" aria-label="WiseMatch">🏠</Link>
+        <Link href="/discover" aria-label="WiseMatch">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="WiseMatch" width={52} height={52} className="rounded-full" />
+        </Link>
         <nav className="mt-8 grid w-full gap-1 px-2">
           {NAV.map(({ href, label, Icon }) => {
             const on = pathname.startsWith(href);

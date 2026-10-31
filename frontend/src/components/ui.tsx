@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { initials, scoreColor } from "@/lib/format";
+import { scoreColor } from "@/lib/format";
 
-export function Logo({ size = 28 }: { size?: number }) {
+export function Logo({ size = 44 }: { size?: number }) {
   return (
-    <span className="inline-flex items-center gap-2 font-display text-lg font-bold tracking-tight text-ink">
-      <span style={{ fontSize: size, lineHeight: 1 }} aria-hidden>🏠</span>
+    <span className="inline-flex items-center gap-2.5 font-display text-lg font-bold tracking-tight text-ink">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/logo.png" alt="" width={size} height={size} style={{ width: size, height: size }} className="rounded-full" />
       WiseMatch
     </span>
   );
@@ -14,16 +15,17 @@ export function Logo({ size = 28 }: { size?: number }) {
 
 export function Avatar({ name, id, size = 44, ring, src }: { name: string; id: number; size?: number; ring?: boolean; src?: string }) {
   const [bad, setBad] = useState(false);
-  const hue = (id * 47) % 360;
   return (
     <span
       className={`relative inline-grid shrink-0 place-items-center overflow-hidden rounded-full ${ring ? "ring-2 ring-brand/70 ring-offset-2 ring-offset-white" : ""}`}
-      style={{ width: size, height: size, background: `linear-gradient(135deg, hsl(${hue} 55% 60%), hsl(${(hue + 50) % 360} 55% 45%))` }}
+      style={{ width: size, height: size, background: "#ece6f7" }}
     >
       {bad || !src ? (
-        <span className="font-display font-semibold text-white" style={{ fontSize: size * 0.38 }}>
-          {initials(name)}
-        </span>
+        <svg viewBox="0 0 24 24" width={size} height={size} aria-label={`${name} has no profile photo`}>
+          <rect width="24" height="24" fill="#ece6f7" />
+          <circle cx="12" cy="9.2" r="4.1" fill="#b9acd6" />
+          <path d="M3.5 24c0-5.2 3.8-8.6 8.5-8.6s8.5 3.4 8.5 8.6z" fill="#b9acd6" />
+        </svg>
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={name} width={size} height={size} loading="lazy" onError={() => setBad(true)} className="h-full w-full object-cover" />
