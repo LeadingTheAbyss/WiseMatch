@@ -51,7 +51,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     if (!items || activeId == null) return;
     const open = items.find((c) => c.id === activeId);
     if (open) setTab(open.incoming ? "requests" : "chats");
-  }, [activeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeId, items === null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const incoming = (items ?? []).filter((c) => c.incoming);
   const chats = (items ?? []).filter((c) => !c.incoming);
