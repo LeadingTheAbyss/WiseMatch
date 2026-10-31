@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env", extra="ignore")
 
     database_url: str = ""
-    qloo_api_key: str = ""
-    qloo_base_url: str = "https://hackathon.api.qloo.com"
+    taste_api_key: str = ""
+    taste_base_url: str = ""
     groq_api_key: str = ""
     groq_model: str = "openai/gpt-oss-120b"
     jwt_secret: str = "dev-secret-change-me"

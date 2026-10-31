@@ -27,7 +27,7 @@ class User(Base):
     languages: Mapped[list] = mapped_column(JSON, default=list)
     traits: Mapped[dict] = mapped_column(JSON, default=dict)  # what the person is like
     prefs: Mapped[dict] = mapped_column(JSON, default=dict)  # what they accept in a roommate
-    taste: Mapped[list] = mapped_column(JSON, default=list)  # Qloo entities they love
+    taste: Mapped[list] = mapped_column(JSON, default=list)  # taste entities they love
     tags: Mapped[list] = mapped_column(JSON, default=list)  # taste tags, derived
     anti_tags: Mapped[list] = mapped_column(JSON, default=list)
     custom_prefs: Mapped[list] = mapped_column(JSON, default=list)

@@ -1,7 +1,7 @@
 """The matching agent.
 
 Each turn it: (1) measures the live candidate pool, (2) scores every possible question by how
-evenly it would split that pool (Akinator-style), (3) pulls Qloo taste entities for taste
+evenly it would split that pool (Akinator-style), (3) pulls taste-graph entities for taste
 questions, and (4) lets the LLM pick and phrase the final question. Answers prune the pool, hard
 deal-breakers remove people outright, everything else just reshapes the compatibility score.
 """
@@ -12,7 +12,7 @@ import random
 from . import llm, trace
 from .catalog import TAGS, TRAIT_QUESTIONS, avatar_of
 from .engine import MAX_QUESTIONS, STOP_POOL, card, compat, heads_up, option_values, pool_for, rank, rank_questions, reasons_for
-from .qloo import qloo
+from .taste import taste
 
 ANSWER_META = "_order"
 
@@ -160,7 +160,7 @@ async def _build(me: dict, cand: dict, text: str, why: str, pool_n: int, by_agen
         q["emoji"] = TAGS[tag][1]
         q["topic"] = TAGS[tag][0]
         q["them_text"] = f"Should your roommate be into {TAGS[tag][0].lower()}?"
-        q["examples"] = (await qloo.examples_for_tag(tag))[:4]
+        q["examples"] = (await taste.examples_for_tag(tag))[:4]
     else:
         spec = TRAIT_QUESTIONS[qid]
         q["emoji"] = spec["options"][0][2]
@@ -186,7 +186,7 @@ async def next_step(me: dict) -> dict:
         cands = rank_questions(me, pool, limit=40)
         recent = me["answers"].get(ANSWER_META, [])[-2:]
         if len(recent) == 2 and not any(q.startswith("tag:") for q in recent):
-            # two lifestyle questions in a row: the next one is a taste question grounded in Qloo
+            # two lifestyle questions in a row: the next one is a taste question grounded in the taste graph
             taste_only = [c for c in cands if c["kind"] == "taste"]
             cands = taste_only or cands
         cands = cands[:6]

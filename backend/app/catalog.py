@@ -1,6 +1,6 @@
 """Static reference data: Bangalore areas, the offline taste graph and the question bank.
 
-The taste catalog mirrors the shape of Qloo entities so the mock client and the live
+The taste catalog mirrors the shape of the live taste-graph entities so the mock client and the live
 client can be swapped without the rest of the app noticing.
 """
 

@@ -17,7 +17,7 @@ from .db import IS_SQLITE, SessionLocal, get_db
 from .engine import card, compat, heads_up, pool_for, rank, reasons_for
 from .inbox import seed_inbox
 from .models import Conversation, Interest, Listing, Message, User
-from .qloo import qloo
+from .taste import taste
 from .store import LISTINGS, USERS
 
 router = APIRouter(prefix="/api")
@@ -115,7 +115,7 @@ def profile_view(me: dict, c: dict, db: Session) -> dict:
 # ----------------------------------------------------------------------------- meta
 @router.get("/health")
 def health():
-    return {"ok": True, "users": len(USERS), "db": "sqlite" if IS_SQLITE else "postgres", "qloo": qloo.mode, "llm": "groq" if llm.available() else "off"}
+    return {"ok": True, "users": len(USERS), "db": "sqlite" if IS_SQLITE else "postgres", "taste": taste.mode, "llm": "groq" if llm.available() else "off"}
 
 
 @router.get("/catalog")
@@ -155,7 +155,7 @@ def stats():
 
 @router.get("/agent/trace")
 def agent_trace(after: int = 0, limit: int = 40):
-    return {"events": [e for e in trace.EVENTS if e["id"] > after][-limit:], "qloo": qloo.mode, "llm": "groq" if llm.available() else "off"}
+    return {"events": [e for e in trace.EVENTS if e["id"] > after][-limit:], "taste": taste.mode, "llm": "groq" if llm.available() else "off"}
 
 
 # ----------------------------------------------------------------------------- auth + profile
@@ -279,9 +279,9 @@ class FavIn(BaseModel):
     id: str = ""
 
 
-@router.get("/qloo/search")
-async def qloo_search(q: str, type: str | None = None):
-    return {"source": qloo.mode, "results": await qloo.search(q, type, take=8)}
+@router.get("/taste/search")
+async def taste_search(q: str, type: str | None = None):
+    return {"source": taste.mode, "results": await taste.search(q, type, take=8)}
 
 
 @router.post("/me/favourites")
@@ -398,7 +398,7 @@ async def explain_user(uid: int, me: dict = Depends(current_user)):
     cm = compat(me, c)
     explanation, spots = await asyncio.gather(
         agent.explain(me, c),
-        qloo.hangout_spots(cm["shared_entities"] + [e["name"] for e in me["taste"][:3]], cm["shared_tags"]),
+        taste.hangout_spots(cm["shared_entities"] + [e["name"] for e in me["taste"][:3]], cm["shared_tags"]),
     )
     return {**explanation, "spots": spots["spots"], "spots_source": spots["source"]}
 

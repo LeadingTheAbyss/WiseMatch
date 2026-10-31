@@ -1,8 +1,8 @@
-"""Qloo taste-graph client.
+"""Taste-graph client.
 
-With QLOO_API_KEY set it talks to the hackathon API (X-Api-Key header, GET only). Without a
-key, or when a call fails, it answers from the bundled catalog so the product keeps working.
-Every call is written to the trace so the demo shows when Qloo is really being hit.
+With TASTE_API_KEY and TASTE_BASE_URL set it talks to the external taste API (X-Api-Key header,
+GET only). Without them, or when a call fails, it answers from the bundled catalog so the product
+keeps working. Every call is written to the trace so the demo shows when the live service is hit.
 """
 import httpx
 
@@ -54,7 +54,7 @@ def _norm(e: dict) -> dict:
         "tags": [t for t in tags if t],
         "image": image,
         "locality": (e.get("location") or {}).get("address") if isinstance(e.get("location"), dict) else None,
-        "source": "qloo",
+        "source": "live",
     }
 
 
@@ -63,10 +63,10 @@ def _mock(name: str) -> dict:
     return {"id": e["id"], "name": name, "type": e["type"], "tags": e["tags"], "image": None, "locality": PLACE_LOCALITY.get(name), "source": "mock"}
 
 
-class QlooClient:
+class TasteClient:
     @property
     def live(self) -> bool:
-        return bool(settings.qloo_api_key)
+        return bool(settings.taste_api_key and settings.taste_base_url)
 
     @property
     def mode(self) -> str:
@@ -79,19 +79,19 @@ class QlooClient:
             try:
                 async with httpx.AsyncClient(timeout=10) as client:
                     r = await client.get(
-                        settings.qloo_base_url + path,
+                        settings.taste_base_url + path,
                         params=params,
-                        headers={"X-Api-Key": settings.qloo_api_key},
+                        headers={"X-Api-Key": settings.taste_api_key},
                     )
                 r.raise_for_status()
                 data = r.json()
                 ok = True
             except Exception as exc:  # network, 4xx/5xx, bad json: fall back to the catalog
                 data, ok = None, False
-                trace.log("qloo", f"GET {path} failed", str(exc)[:140], source="qloo", ok=False)
+                trace.log("taste", f"GET {path} failed", str(exc)[:140], source="live", ok=False)
         if ok:
             short = ", ".join(f"{k}={v}" for k, v in list(params.items())[:3])
-            trace.log("qloo", f"GET {path}", short[:140], ms=tm.ms, source="qloo")
+            trace.log("taste", f"GET {path}", short[:140], ms=tm.ms, source="live")
         return data
 
     async def search(self, query: str, kind: str | None = None, take: int = 8) -> list[dict]:
@@ -108,7 +108,7 @@ class QlooClient:
                 return out
         q = query.lower()
         hits = [n for n, e in ENTITIES.items() if q in n.lower() and (not kind or e["type"] == kind)]
-        trace.log("qloo", "search (offline catalog)", f"q={query}", source="mock")
+        trace.log("taste", "search (offline catalog)", f"q={query}", source="mock")
         return [_mock(n) for n in hits[:take]]
 
     async def insights(self, kind: str, entity_ids: list[str], location: str = "Bangalore", take: int = 8) -> list[dict] | None:
@@ -135,7 +135,7 @@ class QlooClient:
             out: list[dict] = []
             for name, kind in ents[:3]:
                 found = await self.search(name, kind, take=1)
-                if found and found[0]["source"] == "qloo":
+                if found and found[0]["source"] == "live":
                     out.append(found[0])
             if out:
                 return out
@@ -156,7 +156,7 @@ class QlooClient:
             ids = list(dict.fromkeys(ids))
             rows = await self.insights("place", ids, take=take) if ids else None
             if rows:
-                return {"source": "qloo", "spots": rows[:take]}
+                return {"source": "live", "spots": rows[:take]}
         tags = [t for t in shared_tags if t in ("foodie", "cafes", "craft_beer", "fine_dining", "art_theatre", "books", "nightlife", "trekking", "photography", "cricket")] or TAG_PLACE_FALLBACK
         spots, seen = [], set()
         for t in tags:
@@ -164,8 +164,8 @@ class QlooClient:
                 if kind == "place" and name not in seen:
                     seen.add(name)
                     spots.append(_mock(name))
-        trace.log("qloo", "hangout spots (offline catalog)", ",".join(tags[:3]), source="mock")
+        trace.log("taste", "hangout spots (offline catalog)", ",".join(tags[:3]), source="mock")
         return {"source": "mock", "spots": spots[:take]}
 
 
-qloo = QlooClient()
+taste = TasteClient()

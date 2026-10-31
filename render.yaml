@@ -11,7 +11,9 @@ services:
         value: 3.12.0
       - key: DATABASE_URL
         sync: false
-      - key: QLOO_API_KEY
+      - key: TASTE_API_KEY
+        sync: false
+      - key: TASTE_BASE_URL
         sync: false
       - key: GROQ_API_KEY
         sync: false

@@ -1,7 +1,7 @@
 """Matching engine: hard filters, Akinator-style question scoring and the compatibility model.
 
 Everything here is deterministic maths over the in-memory store. The agent (agent.py) layers
-Qloo and the LLM on top of it to choose and phrase the next question.
+the taste graph and the LLM on top of it to choose and phrase the next question.
 """
 from collections import Counter
 from math import asin, cos, exp, log2, radians, sin, sqrt

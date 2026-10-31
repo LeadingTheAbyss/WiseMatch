@@ -1,4 +1,4 @@
-"""Tiny in-process activity log. Every Qloo / Groq / agent decision lands here so the UI can
+"""Tiny in-process activity log. Every taste-graph / Groq / agent decision lands here so the UI can
 show the agent "thinking" live during a demo."""
 import itertools
 import time
@@ -12,7 +12,7 @@ def log(kind: str, title: str, detail: str = "", ms: int | None = None, source: 
     event = {
         "id": next(_counter),
         "t": int(time.time() * 1000),
-        "kind": kind,  # pool | qloo | llm | decide
+        "kind": kind,  # pool | taste | llm | decide
         "title": title,
         "detail": detail,
         "ms": ms,
