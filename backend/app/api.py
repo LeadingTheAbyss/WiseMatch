@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from . import agent, llm, store, trace
 from .auth import current_user, make_token
-from .catalog import AREAS, ENTITIES, LANGUAGES, RELIGIONS, TAGS, TRAIT_QUESTIONS, avatar_for
+from .catalog import AREAS, ENTITIES, LANGUAGES, RELIGIONS, TAGS, TRAIT_QUESTIONS, avatar_of
 from .db import IS_SQLITE, SessionLocal, get_db
 from .engine import card, compat, heads_up, pool_for, rank, reasons_for
 from .inbox import seed_inbox
@@ -88,7 +88,7 @@ def me_view(me: dict, db: Session) -> dict:
     listing = LISTINGS.get(me["id"])
     return {
         **{k: me[k] for k in ("id", "name", "age", "gender", "occupation", "area", "bio", "intent", "budget_min", "budget_max", "move_in", "gender_pref", "religion", "languages", "traits", "prefs", "custom_prefs", "taste", "onboarded", "verified")},
-        "avatar": avatar_for(me["id"], me["gender"]),
+        "avatar": avatar_of(me),
         "tags": tag_chips(me),
         "trait_chips": trait_chips(me),
         "answered": len(agent.answered_ids(me)),
@@ -149,7 +149,7 @@ def stats():
         "rooms": sum(1 for u in USERS.values() if u["intent"] == "has_room"),
         "areas": areas,
         "top_tags": [{"key": k, "label": TAGS[k][0], "emoji": TAGS[k][1], "count": n} for k, n in tag_counts.most_common(10) if k in TAGS],
-        "points": [{"avatar": avatar_for(u["id"], u["gender"]), "id": u["id"], "lat": u["lat"], "lng": u["lng"], "name": u["name"], "intent": u["intent"], "area": u["area"]} for u in located],
+        "points": [{"avatar": avatar_of(u), "id": u["id"], "lat": u["lat"], "lng": u["lng"], "name": u["name"], "intent": u["intent"], "area": u["area"]} for u in located],
     }
 
 
@@ -421,7 +421,7 @@ def _msg(m: Message, me_id: int) -> dict:
 
 
 def _other(c: dict, score: int) -> dict:
-    return {"id": c["id"], "name": c["name"], "area": c["area"], "verified": c["verified"], "last_active": c["last_active"], "score": score, "occupation": c["occupation"], "avatar": avatar_for(c["id"], c["gender"]), "is_demo": c["is_demo"]}
+    return {"id": c["id"], "name": c["name"], "area": c["area"], "verified": c["verified"], "last_active": c["last_active"], "score": score, "occupation": c["occupation"], "avatar": avatar_of(c), "is_demo": c["is_demo"]}
 
 
 def _flags(cv: Conversation, me_id: int) -> dict:

@@ -189,3 +189,8 @@ def avatar_for(user_id: int, gender: str) -> str:
     pool = PHOTOS_WOMEN if gender == "female" else PHOTOS_MEN if gender == "male" else (PHOTOS_WOMEN if user_id % 2 else PHOTOS_MEN)
     pid = pool[(user_id * 7) % len(pool)]
     return f"https://images.pexels.com/photos/{pid}/pexels-photo-{pid}.jpeg?auto=compress&cs=tinysrgb&w=240&h=240&fit=crop"
+
+
+def avatar_of(u: dict) -> str:
+    """Photo for a seeded demo profile; people who just registered have no profile picture."""
+    return avatar_for(u["id"], u["gender"]) if u.get("is_demo") else ""
