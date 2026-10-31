@@ -19,7 +19,11 @@ I have developed WiseMatch, an agent-driven roommate discovery platform engineer
 
 ## 🎬 Demo Video
 
-> 🎥 _Demo video link goes here._
+<p align="center">
+  <video src="image/WiseMatch_Demo.mp4" controls muted width="100%"></video>
+</p>
+
+> If the player does not load in your browser, [watch the demo video here](image/WiseMatch_Demo.mp4).
 
 ## 🖼️ A Quick Look
 
