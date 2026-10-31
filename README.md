@@ -1,9 +1,9 @@
-# WiseMatch: Taste-First Roommate Matching Engine
-### Agentic Roommate Discovery & Compatibility Ranking for Bangalore
-
 <p align="center">
   <img src="image/logo.png" alt="WiseMatch Logo" width="260"/>
 </p>
+
+<h1 align="center">WiseMatch: Taste-First Roommate Matching Engine</h1>
+<h3 align="center">Agentic Roommate Discovery & Compatibility Ranking for Bangalore</h3>
 
 I have developed WiseMatch, an agent-driven roommate discovery platform engineered for people who are moving to, or within, Bangalore. Instead of handing the user a fifty-field questionnaire, the system dynamically decides the single most useful question to ask next, narrows a pool of 650+ candidate roommates down in a handful of answers, and ranks whoever is left with a transparent compatibility score. Once two people look like a good fit, they can message each other through an Instagram-style request system, so they get to know each other properly before anyone signs a lease.
 
@@ -48,7 +48,7 @@ Things did not work the first time, and a few of these shaped the final design:
 - **Scores that looked too good to be true.** In early tests a single shared trait produced a 98% match. I added evidence shrinkage so scores start modest and climb as the agent genuinely learns more about you.
 - **The empty-app problem.** A roommate platform with five users feels dead. I generated 650 believable Bangalore profiles across 28 neighbourhoods, with room listings, habits and taste, so the product can be judged end to end on day one.
 - **Likes felt awkward for flatmates.** A mutual-like model added friction nobody needed, so I replaced it with message requests that the other person can accept or delete.
-- **Working with an API I could not see yet.** The Qloo response fields were not confirmed while I was building, so the client parses defensively and falls back to a bundled taste catalog with the same shape. The app never breaks if the live API is slow or unavailable.
+- **Building against an API I could not see yet.** The taste service's response fields were not confirmed while I was building, so the client parses defensively and falls back to a bundled taste catalog with the same shape. The app never breaks if the live service is slow or unavailable.
 - **SQLite forgives, Postgres does not.** The app worked perfectly on a local SQLite file and then failed on Neon because one column was a character too short. A small thing, but it taught me to test against the real database early.
 
 ## 💾 Architecture & Components
@@ -68,10 +68,10 @@ PostgreSQL on Neon (serverless), accessed through SQLAlchemy. Profiles, listings
 Groq (`openai/gpt-oss-120b`) is the language model behind the agents. A deterministic matching engine does the maths, and the model is used where judgement and language matter: choosing and phrasing the next question, explaining why two people match, and playing the demo profiles in chat.
 
 **Taste Intelligence:**
-The Qloo taste graph supplies the example entities shown on taste questions, powers the favourites search, and produces the "spots you would both love" for a matched pair. When a Qloo API key is present these are live calls. Without one, the same shapes come from a bundled catalog so the product keeps working.
+A taste-graph layer supplies the example entities shown on taste questions, powers the favourites search, and produces the "spots you would both love" for a matched pair. When a taste-graph API key is configured these are live calls. Without one, the same shapes come from a bundled catalog so the product keeps working.
 
 <p align="center">
-  <img src="image/Backend_Architecture.svg" alt="Backend architecture: user, frontend, FastAPI, matching engine, Neon, Groq and Qloo"/>
+  <img src="image/Backend_Architecture.svg" alt="Backend architecture: user, frontend, FastAPI, matching engine, Neon, Groq and the taste graph"/>
 </p>
 
 ## 📖 Agentic AI Orchestration & Logic
@@ -84,7 +84,7 @@ On every turn, the orchestrator runs four specialised roles in order:
 
 - **Pool Analyst:** reads the live candidate pool after every hard filter and answer so far.
 - **Question Scorer:** scores every possible question, both lifestyle and taste, by how evenly it would split that pool.
-- **Taste Scout:** for taste questions, pulls example entities from Qloo so the question feels concrete ("e.g. Third Wave Coffee, Blue Tokai").
+- **Taste Scout:** for taste questions, pulls example entities from the taste graph so the question feels concrete ("e.g. Third Wave Coffee, Blue Tokai").
 - **Question Strategist:** the Groq model picks the best candidate and phrases it in a friendly, human way.
 
 Two more agents serve the rest of the product:
@@ -166,7 +166,7 @@ The relational core is intentionally small: `users`, `listings`, `conversations`
 | Backend | FastAPI, Uvicorn, SQLAlchemy 2, httpx, PyJWT |
 | Database | Neon (PostgreSQL), SQLite for local development |
 | Language model | Groq, `openai/gpt-oss-120b` |
-| Taste graph | Qloo API, with a bundled offline fallback |
+| Taste graph | External taste API, with a bundled offline fallback |
 | Hosting | Vercel (frontend), Render (backend) |
 
 ## ⚙️ Run It Locally
@@ -189,11 +189,8 @@ On first start the API creates the tables and seeds 650 Bangalore profiles. To r
 | `DATABASE_URL` | Neon connection string. Leave it empty to use a local SQLite file. |
 | `GROQ_API_KEY` | Groq key for the agents. Without it, questions are picked by score alone and chat replies are canned. |
 | `GROQ_MODEL` | Defaults to `openai/gpt-oss-120b`. |
-| `QLOO_API_KEY` | Qloo hackathon key. Leave empty to use the bundled taste catalog. |
 | `JWT_SECRET` | Any long random string. |
 | `CORS_ORIGINS` | Comma-separated frontend origins. |
-
-Once your Qloo key is in, `python -m app.check_qloo` prints the live response shapes so you can confirm everything lines up.
 
 **2. Frontend**
 
@@ -214,7 +211,6 @@ Open http://localhost:3000. Guest access is one tap and everything is pre-filled
 backend/app
   agent.py      question selection, answers, match explanations, chat personas
   engine.py     hard filters, split scoring, compatibility model
-  qloo.py       Qloo client with offline fallback
   llm.py        Groq client
   api.py        REST endpoints (auth, agent, matches, chat, requests)
   seed.py       650-profile Bangalore generator
@@ -227,7 +223,7 @@ image/          screenshots and architecture diagrams used in this README
 
 ## 🗺️ What's Next
 
-- Switch the taste layer to live Qloo calls end to end once the API key is in place.
+- Move the taste layer fully onto live calls to the external taste-graph API.
 - Real sign-in (Google OAuth) in place of guest sessions, along with blocking and reporting.
 - Photo uploads for rooms and profiles.
 - Learning from the accepts and declines to improve the ranking over time.
@@ -236,7 +232,3 @@ image/          screenshots and architecture diagrams used in this README
 ## 📜 License
 
 Released under the [MIT License](LICENSE).
-
-## 🙏 Acknowledgements
-
-Built for the Qloo LLM Hackathon. Thanks to **Qloo** for the taste graph, **Groq** for fast inference, **Neon** for serverless Postgres, and **Pexels** for the free portrait photos.
