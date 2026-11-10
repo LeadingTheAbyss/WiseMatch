@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+/* Same tokens as the website (frontend/src/app/globals.css) so ported UI looks identical */
+@theme {
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface2: #f6f3fd;
+  --color-line: #e6e0f3;
+  --color-ink: #1a1030;
+  --color-muted: #6b6485;
+  --color-brand: #6d28d9;
+  --color-brand2: #8b5cf6;
+  --color-deep: #3b0b6f;
+  --color-good: #059669;
+}
+
+@utility card {
+  @apply rounded-2xl border border-line bg-surface shadow-sm shadow-purple-900/5;
+}
+@utility chip {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface2 px-3 py-1 text-xs font-medium text-ink/85;
+}
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand/25;
+  background-image: linear-gradient(135deg, var(--color-brand), var(--color-brand2));
+}
